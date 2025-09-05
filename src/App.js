@@ -21,7 +21,7 @@ const App = () => {
     const [statFilters, setStatFilters] = useState({
         hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
     });
-    const [showFilters, setShowFilters] = useState(true);
+    const [showFilters, setShowFilters] = useState(false); // Changed to false by default
     const [searchTerm, setSearchTerm] = useState('');
 
     // CSS for the sheen effect animation
@@ -308,18 +308,14 @@ const App = () => {
                                 alt={`${miscrit.element} element`}
                                 className="absolute top-2 left-2 w-10 h-10 rounded-full"
                             />
-                            <div className="grid grid-cols-4 gap-4 w-full h-full p-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full h-full p-4">
                                 {miscrit.images.map((image, index) => (
                                     <div key={index} className="flex flex-col items-center justify-end">
                                         <img src={image} alt={miscrit.names[index]} className={`w-[${(30 * (index + 1)) - (10 * (index + 1))}%] object-contain drop-shadow-md hover-expand`} />
+                                        <h2 className={`text-2xl text-center card-font font-bold ${rarityTextColors[miscrit.rarity]}`} key={index}>{miscrit.names[index]}</h2>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                        <div className="grid grid-cols-4 gap-4 w-full h-full p-4">
-                            {miscrit.names.map((name, index) => (
-                                <h2 className={`text-2xl text-center card-font font-bold ${rarityTextColors[miscrit.rarity]}`} key={index}>{name}</h2>
-                            ))}
                         </div>
                     </div>
                 </div>
@@ -344,7 +340,7 @@ const App = () => {
 
             <header className="sticky-header sticky top-0 z-10 p-4 mb-8">
                 <div className="flex flex-col justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 max-w-7xl mx-auto bg-gray-900/80 rounded-xl p-4 shadow-lg">
-                    <div className="flex flex-row items-center space-x-0 sm:space-x-4 w-full justify-center mb-4 sm:mb-0">
+                    <div className="flex flex-row items-center space-x-0 sm:space-x-4 w-full justify-center mb-4 sm:mb-0 gap-3">
                         <input
                             type="text"
                             placeholder="Search by name..."
@@ -362,7 +358,7 @@ const App = () => {
                         </button>
                     </div>
                     {showFilters && (
-                        <div className="flex flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 max-w-7xl mx-auto rounded-xl p-4 transition-all duration-500 ease-in-out">
+                        <div className="flex flex-col sm:flex-row justify-center items-start flex-wrap gap-y-4 space-y-4 sm:space-y-0 sm:space-x-8 w-full sm:max-w-7xl mx-auto rounded-xl p-4 transition-all duration-500 ease-in-out">
                             <div className="flex items-center space-x-4">
                                 <span className="text-gray-400 font-semibold text-sm">Elements:</span>
                                 <select
