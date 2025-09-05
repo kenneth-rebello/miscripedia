@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import './App.css';
+
 import miscritsData from './data/miscrits.json';
 
 // Main App component
 const App = () => {
-    
 
     // State variables
     const [allMiscrits, setAllMiscrits] = useState([]);
@@ -12,16 +13,56 @@ const App = () => {
     const [elements, setElements] = useState(['All']);
     const [rarities, setRarities] = useState(['All']);
     const [showEvolved, setShowEvolved] = useState(false);
-    const [isLoading, setIsLoading] = useState(true); // New state for loading
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Color and styling constants
-    const rarityBgColors = {
-        'Common': 'bg-gray-700', 'Rare': 'bg-indigo-800', 'Epic': 'bg-green-700',
-        'Exotic': 'bg-fuchsia-700', 'Legendary': 'bg-amber-700',
+    // CSS for the sheen effect animation
+    const sheenStyles = `
+        @keyframes sheen {
+            0% { transform: translateX(-100%) skewX(-20deg); }
+            100% { transform: translateX(100%) skewX(-20deg); }
+        }
+        .common-sheen:hover::after, .rare-sheen:hover::after, .epic-sheen:hover::after {
+            animation: sheen 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .exotic-sheen:hover::after, .legendary-sheen:hover::after {
+            animation: sheen 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .common-sheen::after, .rare-sheen::after, .epic-sheen::after, .exotic-sheen::after, .legendary-sheen::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            pointer-events: none;
+            transition: none;
+            z-index: 10;
+        }
+        .common-sheen::after, .rare-sheen::after, .epic-sheen::after {
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: translateX(-100%) skewX(-20deg);
+        }
+        .exotic-sheen::after, .legendary-sheen::after {
+            background: linear-gradient(to right, rgba(255, 215, 0, 0) 0%, rgba(249, 224, 82, 0.47) 50%, rgba(255, 215, 0, 0) 100%);
+            transform: translateX(-100%) skewX(-20deg);
+        }
+    `;
+
+    const elementColors = {
+        'Water': 'sky', 'Nature': 'green', 'Fire': 'red',
+        'Lightning': 'indigo', 'Earth': 'orange', 'Wind': 'violet',
     };
-    const elementHighlight = {
-        'Water': 'from-blue-500/50', 'Nature': 'from-green-500/50', 'Fire': 'from-red-500/50',
-        'Lightning': 'from-yellow-500/50', 'Earth': 'from-orange-500/50', 'Wind': 'from-purple-500/50',
+
+    // Function to get the correct gradient class for single or dual elements
+    const getGradientClass = (element) => {
+        const primaryElement = element;
+        const [el1, el2] = element.split(/(?=[A-Z])/).filter(Boolean); // Split by capitalized letters
+        if (el1 && el2 && elementColors[el1] && elementColors[el2]) {
+            // Dual element
+            return `from-${elementColors[el1]}-500/50 to-${elementColors[el2]}-500/50`;
+        }
+        // Single element
+        return `from-${elementColors[primaryElement]}-100/50 to-${elementColors[primaryElement]}-700`;
     };
 
     // Function to map a stat value to a Tailwind CSS color class.
@@ -59,11 +100,11 @@ const App = () => {
         setAllMiscrits(transformedMiscrits);
 
         // Populate filters
-        const elementSet = new Set(transformedMiscrits.map(m => m.element));
-        const raritySet = new Set(transformedMiscrits.map(m => m.rarity));
-        setElements(['All', ...Array.from(elementSet)]);
-        setRarities(['All', ...Array.from(raritySet)]);
-        
+        const allElements = new Set(transformedMiscrits.map(m => m.element));
+        const allRarities = new Set(transformedMiscrits.map(m => m.rarity));
+        setElements(['All', ...Array.from(allElements)]);
+        setRarities(['All', ...Array.from(allRarities)]);
+
         // Set loading to false after initial data load
         setIsLoading(false);
     }, []);
@@ -98,11 +139,11 @@ const App = () => {
 
         const statIcons = {
             hp: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clip-rule="evenodd" /></svg>',
-            spd: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path d="M11.646 1.516a.75.75 0 0 1 .708 0l7.5 4.5a.75.75 0 0 1 0 1.26l-7.5 4.5a.75.75 0 0 1-.708 0l-7.5-4.5a.75.75 0 0 1 0-1.26l7.5-4.5Z" /><path d="M16.924 12.516a.75.75 0 0 1 .672-.11l3.5-.75A.75.75 0 0 1 22 12.632v7.24a.75.75 0 0 1-.672.744l-3.5.75a.75.75 0 0 1-.672-.11v-8.25Z" /><path d="M11.646 13.516a.75.75 0 0 1 .708 0l7.5 4.5a.75.75 0 0 1 0 1.26l-7.5 4.5a.75.75 0 0 1-.708 0l-7.5-4.5a.75.75 0 0 1 0-1.26l7.5-4.5Z" /><path d="M6.924 12.516a.75.75 0 0 1 .672.11v8.25a.75.75 0 0 1-.672.11l-3.5-.75A.75.75 0 0 1 2 20.132v-7.24a.75.75 0 0 1 .672-.744l3.5-.75a.75.75 0 0 1 .672.11Z" /></svg>',
+            spd: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path d="M11.5 19.5L9 22V14H2L12.5 2.5L15 2V10H22L11.5 19.5Z" /></svg>',
             ea: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path d="M12 2.25a.75.75 0 0 1 .75.75v6.59l4.588-3.327a.75.75 0 0 1 .84.148l.004.004a.75.75 0 0 1-.148.84l-4.225 3.064 4.015 3.064a.75.75 0 0 1-.004 1.258l-.004.004a.75.75 0 0 1-.84-.148L12.75 14.41v6.59a.75.75 0 0 1-1.5 0v-6.59l-4.588 3.327a.75.75 0 0 1-.84-.148l-.004-.004a.75.75 0 0 1 .148-.84l4.225-3.064-4.015-3.064a.75.75 0 0 1 .004-1.258l.004-.004a.75.75 0 0 1 .84.148L11.25 9.59V3a.75.75 0 0 1 .75-.75Z" /></svg>',
             pa: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path fill-rule="evenodd" d="M19.952 1.344a.75.75 0 0 0-1.002-.214l-12.742 7.27a.75.75 0 0 0 0 1.352l12.742 7.27a.75.75 0 0 0 1.002-.214l2.871-6.194a.75.75 0 0 0-.214-1.002l-2.871-6.194Z" clip-rule="evenodd" /><path d="M8.25 4.5a.75.75 0 0 0-1.5 0v15a.75.75 0 0 0 1.5 0v-15Z" /></svg>',
-            ed: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75Zm3.375-3.375a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75ZM8.25 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Zm3.75 1.5a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75Zm-3.375-3.375a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75Zm3.75-3.75a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75Z" clip-rule="evenodd" /></svg>',
-            pd: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75Zm3.375-3.375a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75ZM8.25 12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Zm3.75 1.5a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75Zm-3.375-3.375a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75Zm3.75-3.75a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0v-1.5a.75.75 0 0 0-.75-.75Z" clip-rule="evenodd" /></svg>',
+            ed: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path d="M12 2.25c-2.33 0-4.5.918-6.121 2.539l-.025.025c-1.62 1.62-2.539 3.791-2.539 6.121v5.625A2.25 2.25 0 0 0 5.25 18.75h13.5a2.25 2.25 0 0 0 2.25-2.25v-5.625c0-2.33-.919-4.501-2.54-6.121l-.025-.025C16.5 3.168 14.33 2.25 12 2.25ZM12 4.5a.75.75 0 0 1 .75.75V9a.75.75 0 0 1-1.5 0V5.25a.75.75 0 0 1 .75-.75Z" /></svg>',
+            pd: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path d="M12 2.25c-2.33 0-4.5.918-6.121 2.539l-.025.025c-1.62 1.62-2.539 3.791-2.539 6.121v5.625A2.25 2.25 0 0 0 5.25 18.75h13.5a2.25 2.25 0 0 0 2.25-2.25v-5.625c0-2.33-.919-4.501-2.54-6.121l-.025-.025C16.5 3.168 14.33 2.25 12 2.25ZM12 4.5a.75.75 0 0 1 .75.75V9a.75.75 0 0 1-1.5 0V5.25a.75.75 0 0 1 .75-.75Z" /></svg>',
         };
         const iconBgColors = {
             hp: 'bg-green-600',
@@ -113,6 +154,31 @@ const App = () => {
             pd: 'bg-blue-600',
         };
 
+
+        const rarityShinyBgColors = {
+            'Common': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-600 via-slate-700 to-slate-900',
+            'Rare': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-800 via-sky-900 to-sky-950',
+            'Epic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600 via-emerald-700 to-emerald-900',
+            'Exotic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-800 via-fuchsia-900 to-fuchsia-950',
+            'Legendary': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-300 via-amber-400 to-amber-500',
+        };
+        
+        const rarityTextColors = {
+            'Common': 'text-gray-200',
+            'Rare': 'text-gray-200',
+            'Epic': 'text-gray-200',
+            'Exotic': 'text-gray-200',
+            'Legendary': 'text-stone-800',
+        };
+
+        const rarityBorder = {
+            'Common': 'border-slate',
+            'Rare': 'border-slate',
+            'Epic': 'border-slate',
+            'Exotic': 'border-[#f9e052]',
+            'Legendary': 'border-[#f9e052]',
+        }
+
         const stats = Object.keys(statLabels).map(key => ({
             label: statLabels[key],
             statKey: key, // Store the key for icon lookup
@@ -121,10 +187,12 @@ const App = () => {
             widthClass: statWidths[statValues[miscrit[key]]]
         }));
 
+        const sheenClass = miscrit.rarity === 'Exotic' || miscrit.rarity === 'Legendary' ? 'exotic-sheen' : 'common-sheen';
+        
         return (
-            <div className={`bg-gray-100 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transform transition-transform duration-300 hover:scale-105 border-2 border-amber-200 flex flex-col`}>
-                <div className={`relative w-full h-48 sm:h-52 flex justify-center items-center p-4 bg-gradient-to-br ${elementHighlight[miscrit.element]} to-gray-900`}>
-                    
+            <div className={`${rarityShinyBgColors[miscrit.rarity]} card-font rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transform transition-transform duration-300 hover:scale-105 border-2 border-slate-400 ${rarityBorder[miscrit.rarity]} flex flex-col relative ${sheenClass}`}>
+                <div className={`relative w-full h-48 sm:h-52 flex justify-center items-center p-4 bg-gradient-to-br ${getGradientClass(miscrit.element)}`}>
+
                     <img
                         src={`https://worldofmiscrits.com/${miscrit.element.toLowerCase()}.png`}
                         alt={`${miscrit.element} element`}
@@ -132,43 +200,50 @@ const App = () => {
                     />
 
                     {showEvolved ? (
-                        <div className="flex justify-around w-full h-full">
+                        <div className="flex justify-around w-full h-full gap-4">
                             <div className="flex flex-col items-center justify-end">
-                                <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-full object-contain drop-shadow-md`} />
-                                <span className="text-sm font-semibold text-white mt-1">{miscrit.names[0]}</span>
+                                <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-20 object-contain drop-shadow-md`} />
                             </div>
                             <div className="flex flex-col items-center justify-end">
                                 <img src={miscrit.images[3]} alt={miscrit.names[3]} className={`h-full object-contain drop-shadow-md`} />
-                                <span className="text-sm font-semibold text-white mt-1">{miscrit.names[3]}</span>
                             </div>
                         </div>
                     ) : (
                         <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-full object-contain drop-shadow-md`} />
                     )}
                 </div>
-                <div className={`p-2 sm:p-3 text-center flex-1 flex flex-col justify-between ${rarityBgColors[miscrit.rarity]}`}>
+                <div className={`p-2 sm:p-3 text-center flex-1 flex flex-col justify-between ${rarityTextColors[miscrit.rarity]}`}>
                     <div>
-                        <h2 className="text-xl sm:text-2xl font-bold text-white">
-                            {miscrit.name}
+                        <h2 className={`text-xl sm:text-2xl font-bold mb-4`}>
+                            {showEvolved ? (
+                                <>
+                                    <span className="text-sm font-semibold text-zinc-300 m-0">{miscrit.names[0]}</span> → <br/>
+                                    <span className="text-3xl m-0" >{miscrit.names[3]}</span>
+                                </>
+                            ) : (
+                                miscrit.name
+                            )}
                         </h2>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 pt-2 border-t border-gray-700">
-                            {stats.map(stat => (
-                                <div key={stat.label} title={stat.label} className="flex items-center space-x-1">
-                                    <div className={`p-1 rounded-full flex items-center justify-center ${iconBgColors[stat.statKey]}`}>
-                                        <div dangerouslySetInnerHTML={{ __html: statIcons[stat.statKey] }} />
+                        <div className="bg-slate-400 rounded-lg p-2">
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 pt-2">
+                                {stats.map(stat => (
+                                    <div key={stat.label} title={stat.label} className="flex items-center space-x-1">
+                                        <div className={`p-1 rounded-full flex items-center justify-center ${iconBgColors[stat.statKey]}`}>
+                                            <div dangerouslySetInnerHTML={{ __html: statIcons[stat.statKey] }} />
+                                        </div>
+                                        <div className="flex flex-col w-full text-left">
+                                            <div className="flex space-x-[2px] mt-1 h-3 rounded overflow-hidden">
+                                                {Array.from({ length: 5 }).map((_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className={`flex-1 rounded-sm ${i < stat.value ? stat.colorClass : 'bg-gray-600'}`}
+                                                    ></div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col w-full text-left">
-                                      <div className="flex space-x-[2px] mt-1 h-3 rounded overflow-hidden">
-                                          {Array.from({ length: 5 }).map((_, i) => (
-                                              <div
-                                                  key={i}
-                                                  className={`flex-1 rounded-sm ${i < stat.value ? stat.colorClass : 'bg-gray-600'}`}
-                                              ></div>
-                                          ))}
-                                      </div>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -178,6 +253,9 @@ const App = () => {
 
     return (
         <div className="bg-black p-3 min-h-screen">
+            {/* The style tag is placed here to define the animation keyframes and classes */}
+            <style>{sheenStyles}</style>
+
             {isLoading && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
                     <div className="relative w-16 h-16">
@@ -216,7 +294,7 @@ const App = () => {
                             ))}
                         </select>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                         <span className="text-gray-400 font-semibold text-sm">Show Evolved:</span>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -233,7 +311,7 @@ const App = () => {
 
                 </div>
             </header>
-            <main className="max-w-7xl mx-auto" style={{padding: 0}}>
+            <main className="max-w-7xl mx-auto" style={{ padding: 0 }}>
                 <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-teal-100 to-emerald-800 drop-shadow-md">
                     Miscrit Dex
                 </h1>
