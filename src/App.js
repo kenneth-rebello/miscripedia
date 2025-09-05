@@ -1,82 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import miscritsData from './data/miscrits.json';
 
 // Main App component
 const App = () => {
-    // Embedded Miscrit data to resolve the file import issue
-    const miscritsData = [
-      {
-        "element": "Water",
-        "rarity": "Common",
-        "names": ["Flippit", "Flippish", "Flipsur"],
-        "ability_order": [121, 122, 123, 124],
-        "abilities": [
-          { "id": 121, "name": "Water Blast", "desc": "Blasts the enemy with a strong jet of water.", "element": "Water", "ap": 10 },
-          { "id": 122, "name": "Splash", "desc": "Splashes the opponent.", "element": "Water", "ap": 5 },
-          { "id": 123, "name": "Torrent", "desc": "A heavy torrent of water.", "element": "Water", "ap": 15 },
-          { "id": 124, "name": "Healing Water", "desc": "Heals the user.", "element": "Misc", "ap": 0 }
-        ],
-        "hp": "Strong",
-        "spd": "Moderate",
-        "ea": "Weak",
-        "pa": "Moderate",
-        "ed": "Strong",
-        "pd": "Weak"
-      },
-      {
-        "element": "Fire",
-        "rarity": "Rare",
-        "names": ["Kindling", "Emblaze", "Flicker"],
-        "ability_order": [125, 126, 127, 128],
-        "abilities": [
-          { "id": 125, "name": "Flame", "desc": "A small flame.", "element": "Fire", "ap": 8 },
-          { "id": 126, "name": "Fireball", "desc": "Throws a fireball.", "element": "Fire", "ap": 12 },
-          { "id": 127, "name": "Inferno", "desc": "An intense fire.", "element": "Fire", "ap": 18 },
-          { "id": 128, "name": "Heated", "desc": "Raises heat.", "element": "Misc", "ap": 0 }
-        ],
-        "hp": "Moderate",
-        "spd": "Strong",
-        "ea": "Moderate",
-        "pa": "Strong",
-        "ed": "Weak",
-        "pd": "Weak"
-      },
-      {
-        "element": "Earth",
-        "rarity": "Epic",
-        "names": ["Pebble", "Stone", "Boulder"],
-        "ability_order": [129, 130, 131, 132],
-        "abilities": [
-          { "id": 129, "name": "Rock Throw", "desc": "Throws a small rock.", "element": "Earth", "ap": 9 },
-          { "id": 130, "name": "Quake", "desc": "Causes a small earthquake.", "element": "Earth", "ap": 14 },
-          { "id": 131, "name": "Gravel", "desc": "Throws gravel.", "element": "Earth", "ap": 6 },
-          { "id": 132, "name": "Fortify", "desc": "Fortifies the miscrit.", "element": "Misc", "ap": 0 }
-        ],
-        "hp": "Max",
-        "spd": "Weak",
-        "ea": "Strong",
-        "pa": "Strong",
-        "ed": "Moderate",
-        "pd": "Moderate"
-      },
-      {
-        "element": "Lightning",
-        "rarity": "Exotic",
-        "names": ["Spark", "Jolt", "Volt"],
-        "ability_order": [133, 134, 135, 136],
-        "abilities": [
-          { "id": 133, "name": "Spark", "desc": "A small spark.", "element": "Lightning", "ap": 11 },
-          { "id": 134, "name": "Jolt", "desc": "A quick jolt of electricity.", "element": "Lightning", "ap": 16 },
-          { "id": 135, "name": "Thunder", "desc": "A mighty thunder bolt.", "element": "Lightning", "ap": 20 },
-          { "id": 136, "name": "Static", "desc": "Electrifies the air.", "element": "Misc", "ap": 0 }
-        ],
-        "hp": "Moderate",
-        "spd": "Elite",
-        "ea": "Strong",
-        "pa": "Strong",
-        "ed": "Weak",
-        "pd": "Weak"
-      }
-    ];
+    
 
     // State variables
     const [allMiscrits, setAllMiscrits] = useState([]);
