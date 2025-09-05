@@ -3,3 +3,8 @@
     font-weight: 400;
     font-style: normal;
 }
+
+
+.hover-expand:hover {
+    min-width: 70%;
+}

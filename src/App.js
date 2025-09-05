@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
 
+import './App.css';
 import miscritsData from './data/miscrits.json';
 
 // Main App component
@@ -10,10 +10,18 @@ const App = () => {
     const [allMiscrits, setAllMiscrits] = useState([]);
     const [currentElementFilter, setCurrentElementFilter] = useState('All');
     const [currentRarityFilter, setCurrentRarityFilter] = useState('All');
+    const [currentLocationFilter, setCurrentLocationFilter] = useState('All');
+    const [currentSortOrder, setCurrentSortOrder] = useState('default');
     const [elements, setElements] = useState(['All']);
     const [rarities, setRarities] = useState(['All']);
+    const [locations, setLocations] = useState(['All']);
     const [showEvolved, setShowEvolved] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [expandedMiscritId, setExpandedMiscritId] = useState(null);
+    const [isStatFilterOpen, setIsStatFilterOpen] = useState(false);
+    const [statFilters, setStatFilters] = useState({
+        hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
+    });
 
     // CSS for the sheen effect animation
     const sheenStyles = `
@@ -43,7 +51,7 @@ const App = () => {
             transform: translateX(-100%) skewX(-20deg);
         }
         .exotic-sheen::after, .legendary-sheen::after {
-            background: linear-gradient(to right, rgba(255, 215, 0, 0) 0%, rgba(249, 224, 82, 0.47) 50%, rgba(255, 215, 0, 0) 100%);
+            background: linear-gradient(to right, rgba(255, 215, 0, 0) 0%, rgba(255, 215, 0, 0.5) 50%, rgba(255, 215, 0, 0) 100%);
             transform: translateX(-100%) skewX(-20deg);
         }
     `;
@@ -76,10 +84,10 @@ const App = () => {
     // Data fetching and transformation logic
     useEffect(() => {
         const transformedMiscrits = miscritsData.map(m => {
-            const { element, rarity, names } = m;
+            const { id, element, rarity, names, abilities: rawAbilities } = m;
             const abilityIDs = m.ability_order.slice(-4);
-            const abilities = abilityIDs.map(id => {
-                const ability = m.abilities.find(a => a.id === id);
+            const abilities = abilityIDs.map(i => {
+                const ability = rawAbilities.find(a => a.id === i);
                 if (ability?.element === 'Misc') return null;
 
                 const ap = ability.ap + (ability.enchant?.ap || 0);
@@ -88,12 +96,17 @@ const App = () => {
                 return { name: ability.name, desc: ability.desc, element: ability.element, ap, additional };
             }).filter(Boolean);
 
+            // Calculate maxAP
+            const maxAP = abilities.length > 0 ? Math.max(...abilities.map(a => a.ap)) : 0;
+
             let images = names.map(n => `https://cdn.worldofmiscrits.com/miscrits/${n.split(' ').join('_').toLowerCase()}_back.png`);
 
+            let locations = Object.keys(m.locations);
+
             return {
-                name: m.names[0], element, rarity, names, images,
+                id, name: m.names[0], element, rarity, names, images,
                 hp: m.hp, spd: m.spd, ea: m.ea, pa: m.pa, ed: m.ed, pd: m.pd,
-                abilities,
+                abilities, locations, maxAP
             };
         });
 
@@ -105,11 +118,14 @@ const App = () => {
         setElements(['All', ...Array.from(allElements)]);
         setRarities(['All', ...Array.from(allRarities)]);
 
+        const allLocations = new Set(transformedMiscrits.flatMap(m => m.locations));
+        setLocations(['All', ...Array.from(allLocations).sort()]);
+
         // Set loading to false after initial data load
         setIsLoading(false);
     }, []);
 
-    // Function to handle toggle and show temporary loading state
+    // Function to handle the Evolved toggle
     const handleToggle = (e) => {
         setShowEvolved(e.target.checked);
         setIsLoading(true);
@@ -118,21 +134,48 @@ const App = () => {
         }, 2000);
     };
 
+    const handleStatFilterChange = (stat, value) => {
+        setStatFilters(prevFilters => ({
+            ...prevFilters,
+            [stat]: value,
+        }));
+    };
+
+    const resetStatFilters = () => {
+        setStatFilters({ hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1 });
+    };
+
+    // Function to map stat string values to a number for comparison
+    const statValues = {
+        'Weak': 1, 'Moderate': 2, 'Strong': 3, 'Max': 4, 'Elite': 5
+    };
+
+    // Sort miscrits based on state
+    const sortedMiscrits = [...allMiscrits].sort((a, b) => {
+        if (currentSortOrder === 'power') {
+            return b.maxAP - a.maxAP;
+        }
+        return a.id - b.id; // Default sort by ID
+    });
+
     // Filter miscrits based on state
-    const filteredMiscrits = allMiscrits.filter(miscrit => {
+    const filteredMiscrits = sortedMiscrits.filter(miscrit => {
         const elementMatch = currentElementFilter === 'All' || miscrit.element === currentElementFilter;
         const rarityMatch = currentRarityFilter === 'All' || miscrit.rarity === currentRarityFilter;
-        return elementMatch && rarityMatch;
+        const locationMatch = currentLocationFilter === 'All' || miscrit.locations.includes(currentLocationFilter);
+
+        const statMatch = Object.keys(statFilters).every(statKey => {
+            return statValues[miscrit[statKey]] >= statFilters[statKey];
+        });
+
+        return elementMatch && rarityMatch && locationMatch && statMatch;
     });
 
     // Miscrit card component
-    const MiscritCard = ({ miscrit }) => {
+    const MiscritCard = ({ miscrit, onClick }) => {
         const statLabels = {
             hp: 'HP', spd: 'SPD', ea: 'EA', pa: 'PA', ed: 'ED', pd: 'PD'
         };
-        const statValues = {
-            'Weak': 1, 'Moderate': 2, 'Strong': 3, 'Max': 4, 'Elite': 5
-        }
         const statWidths = {
             1: 'w-[20%]', 2: 'w-[40%]', 3: 'w-[60%]', 4: 'w-[80%]', 5: 'w-[100%]'
         }
@@ -154,30 +197,32 @@ const App = () => {
             pd: 'bg-blue-600',
         };
 
-
         const rarityShinyBgColors = {
-            'Common': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-600 via-slate-700 to-slate-900',
-            'Rare': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-800 via-sky-900 to-sky-950',
-            'Epic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600 via-emerald-700 to-emerald-900',
-            'Exotic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-800 via-fuchsia-900 to-fuchsia-950',
-            'Legendary': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-300 via-amber-400 to-amber-500',
+            'Common': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-600 to-slate-900',
+            'Rare': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950 via-blue-600 to-blue-950',
+            'Epic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900 via-emerald-600 to-emerald-900',
+            'Exotic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-950 via-fuchsia-700 to-fuchsia-950',
+            'Legendary': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-600 via-amber-300 to-amber-600',
         };
-        
+
         const rarityTextColors = {
             'Common': 'text-gray-200',
             'Rare': 'text-gray-200',
             'Epic': 'text-gray-200',
             'Exotic': 'text-gray-200',
-            'Legendary': 'text-stone-800',
+            'Legendary': 'text-black',
         };
 
-        const rarityBorder = {
-            'Common': 'border-slate',
-            'Rare': 'border-slate',
-            'Epic': 'border-slate',
-            'Exotic': 'border-[#f9e052]',
-            'Legendary': 'border-[#f9e052]',
-        }
+        // Determine border color based on rarity
+        const getBorderColorClass = (rarity) => {
+            const highRarities = ['Epic', 'Exotic', 'Legendary'];
+            if (highRarities.includes(rarity)) {
+                return 'border-amber-400';
+            }
+            return 'border-slate-500';
+        };
+
+        const borderColorClass = getBorderColorClass(miscrit.rarity);
 
         const stats = Object.keys(statLabels).map(key => ({
             label: statLabels[key],
@@ -188,42 +233,35 @@ const App = () => {
         }));
 
         const sheenClass = miscrit.rarity === 'Exotic' || miscrit.rarity === 'Legendary' ? 'exotic-sheen' : 'common-sheen';
-        
-        return (
-            <div className={`${rarityShinyBgColors[miscrit.rarity]} card-font rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transform transition-transform duration-300 hover:scale-105 border-2 border-slate-400 ${rarityBorder[miscrit.rarity]} flex flex-col relative ${sheenClass}`}>
-                <div className={`relative w-full h-48 sm:h-52 flex justify-center items-center p-4 bg-gradient-to-br ${getGradientClass(miscrit.element)}`}>
 
+        return (
+            <div
+                className={`${rarityShinyBgColors[miscrit.rarity]} rounded-xl overflow-hidden shadow-xl transform transition-transform duration-300 hover:scale-105 border-2 ${borderColorClass} flex flex-col relative ${sheenClass} cursor-pointer`}
+                onClick={onClick}
+            >
+                <div className={`relative w-full h-48 sm:h-52 flex justify-center items-center p-4 bg-gradient-to-br ${getGradientClass(miscrit.element)}`}>
                     <img
                         src={`https://worldofmiscrits.com/${miscrit.element.toLowerCase()}.png`}
                         alt={`${miscrit.element} element`}
                         className="absolute top-2 left-2 w-8 h-8 rounded-full"
                     />
-
-                    {showEvolved ? (
-                        <div className="flex justify-around w-full h-full gap-4">
-                            <div className="flex flex-col items-center justify-end">
-                                <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-20 object-contain drop-shadow-md`} />
-                            </div>
-                            <div className="flex flex-col items-center justify-end">
-                                <img src={miscrit.images[3]} alt={miscrit.names[3]} className={`h-full object-contain drop-shadow-md`} />
-                            </div>
+                    {
+                        showEvolved ? <div className="flex justify-between w-full h-full p-4 items-end">
+                            <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-[30%] object-contain drop-shadow-md`} />
+                            <img src={miscrit.images[3]} alt={miscrit.names[3]} className={`h-full object-contain drop-shadow-md`} />
                         </div>
-                    ) : (
-                        <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-full object-contain drop-shadow-md`} />
-                    )}
+                            :
+                            <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-full object-contain drop-shadow-md`} />
+                    }
                 </div>
-                <div className={`p-2 sm:p-3 text-center flex-1 flex flex-col justify-between ${rarityTextColors[miscrit.rarity]}`}>
+                <div className={`p-2 sm:p-3 text-center flex-1 flex-col justify-between ${rarityTextColors[miscrit.rarity]}`}>
                     <div>
-                        <h2 className={`text-xl sm:text-2xl font-bold mb-4`}>
-                            {showEvolved ? (
-                                <>
-                                    <span className="text-sm font-semibold text-zinc-300 m-0">{miscrit.names[0]}</span> → <br/>
-                                    <span className="text-3xl m-0" >{miscrit.names[3]}</span>
-                                </>
-                            ) : (
-                                miscrit.name
-                            )}
-                        </h2>
+                        {showEvolved ? <div className="flex flex-col items-center w-full p-0">
+                            <h2 className={`text-xs sm:text-xs font-bold text-slate-400`}>{miscrit.name}</h2>
+                            <h2 className={`text-xl sm:text-3xl font-bold mb-4 card-font`}>{miscrit.names[3]}</h2>
+                        </div> :
+                            <h2 className={`text-xl sm:text-3xl font-bold mb-4 card-font`}>{miscrit.name}</h2>
+                        }
                         <div className="bg-slate-400 rounded-lg p-2">
                             <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 pt-2">
                                 {stats.map(stat => (
@@ -244,6 +282,54 @@ const App = () => {
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const ExpandedMiscritCard = ({ miscrit, onClose }) => {
+        const rarityShinyBgColors = {
+            'Common': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-600 via-slate-700 to-slate-900',
+            'Rare': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-800 via-sky-900 to-sky-950',
+            'Epic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600 via-emerald-700 to-emerald-900',
+            'Exotic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-800 via-fuchsia-900 to-fuchsia-950',
+            'Legendary': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-300 via-amber-400 to-amber-500',
+        };
+        const rarityTextColors = {
+            'Common': 'text-gray-200',
+            'Rare': 'text-gray-200',
+            'Epic': 'text-gray-200',
+            'Exotic': 'text-gray-200',
+            'Legendary': 'text-black',
+        };
+        const borderColorClass = ['Epic', 'Exotic', 'Legendary'].includes(miscrit.rarity) ? 'border-amber-400' : 'border-slate-500';
+        return (
+            <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300"
+                onClick={onClose}
+            >
+                <div className={`relative w-full max-w-5xl rounded-xl shadow-2xl transition-all duration-300 transform scale-95`}>
+                    <div className={`${rarityShinyBgColors[miscrit.rarity]} rounded-xl overflow-hidden shadow-xl border-2 ${borderColorClass} flex flex-col relative`}>
+                        <div className={`relative w-full h-80 flex justify-center items-center p-4 bg-gradient-to-br ${getGradientClass(miscrit.element)}`}>
+                            <img
+                                src={`https://worldofmiscrits.com/${miscrit.element.toLowerCase()}.png`}
+                                alt={`${miscrit.element} element`}
+                                className="absolute top-2 left-2 w-10 h-10 rounded-full"
+                            />
+                            <div className="grid grid-cols-4 gap-4 w-full h-full p-4">
+                                {miscrit.images.map((image, index) => (
+                                    <div key={index} className="flex flex-col items-center justify-end">
+                                        <img src={image} alt={miscrit.names[index]} className={`w-[${(28 * (index + 1)) - (10 * (index + 1))}%] object-contain drop-shadow-md hover-expand`} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-4 w-full h-full p-4">
+                            {miscrit.names.map((name, index) => (
+                                <h2 className={`text-2xl text-center card-font font-bold ${rarityTextColors[miscrit.rarity]}`} key={index}>{name}</h2>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -294,7 +380,69 @@ const App = () => {
                             ))}
                         </select>
                     </div>
-
+                    <div className="flex items-center space-x-4">
+                        <span className="text-gray-400 font-semibold text-sm">Locations:</span>
+                        <select
+                            id="location-select"
+                            value={currentLocationFilter}
+                            onChange={(e) => setCurrentLocationFilter(e.target.value)}
+                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            {locations.map(l => (
+                                <option key={l} value={l}>{l}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <span className="text-gray-400 font-semibold text-sm">Sort By:</span>
+                        <select
+                            id="sort-select"
+                            value={currentSortOrder}
+                            onChange={(e) => setCurrentSortOrder(e.target.value)}
+                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="default">Default (ID)</option>
+                            <option value="power">Power (Max AP)</option>
+                        </select>
+                    </div>
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsStatFilterOpen(!isStatFilterOpen)}
+                            className="flex items-center space-x-2 bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <span className="font-semibold">Stats</span>
+                            <svg className={`w-4 h-4 transition-transform duration-200 ${isStatFilterOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        {isStatFilterOpen && (
+                            <div className="absolute top-full mt-2 w-64 p-4 rounded-xl shadow-lg bg-gray-800 z-20 transition-opacity duration-300">
+                                <h3 className="text-sm font-semibold text-gray-400 mb-2">Minimum Stat Value:</h3>
+                                <div className="space-y-3">
+                                    {Object.keys(statFilters).map(stat => (
+                                        <div key={stat} className="flex items-center justify-between">
+                                            <span className="text-xs font-semibold uppercase w-12">{stat.toUpperCase()}</span>
+                                            <div className="flex flex-1 justify-end space-x-1">
+                                                {[1, 2, 3, 4, 5].map(value => (
+                                                    <div
+                                                        key={value}
+                                                        onClick={() => handleStatFilterChange(stat, value)}
+                                                        className={`w-6 h-6 rounded-md cursor-pointer transition-colors duration-100 ease-in-out ${value <= statFilters[stat] ? getStatColor(value) : 'bg-gray-600'}`}
+                                                    ></div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 flex justify-end">
+                                    <button
+                                        onClick={resetStatFilters}
+                                        className="bg-red-600 text-white text-xs px-3 py-1 rounded-full font-semibold hover:bg-red-700 transition-colors duration-200"
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                     <div className="flex items-center space-x-2">
                         <span className="text-gray-400 font-semibold text-sm">Show Evolved:</span>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -308,19 +456,28 @@ const App = () => {
                             <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                         </label>
                     </div>
-
                 </div>
             </header>
             <main className="max-w-7xl mx-auto" style={{ padding: 0 }}>
                 <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-teal-100 to-emerald-800 drop-shadow-md">
                     Miscrit Dex
                 </h1>
-                <div id="miscrit-container" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div id="miscrit-container" className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`}>
                     {filteredMiscrits.map(miscrit => (
-                        <MiscritCard key={miscrit.name} miscrit={miscrit} />
+                        <MiscritCard
+                            key={miscrit.id}
+                            miscrit={miscrit}
+                            onClick={() => setExpandedMiscritId(miscrit.id)}
+                        />
                     ))}
                 </div>
             </main>
+            {expandedMiscritId && (
+                <ExpandedMiscritCard
+                    miscrit={allMiscrits.find(m => m.id === expandedMiscritId)}
+                    onClose={() => setExpandedMiscritId(null)}
+                />
+            )}
         </div>
     );
 };
