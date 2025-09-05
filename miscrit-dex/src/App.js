@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import miscrits from './data/miscrits.json';
 
 // Main App component
 const App = () => {
@@ -41,52 +42,40 @@ const App = () => {
 
     // Data fetching and transformation logic
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch('https://worldofmiscrits.com/miscrits.json');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const miscritsData = await response.json();
+        const miscritsData = miscrits;
+        console.log(miscritsData);
 
-                const transformedMiscrits = miscritsData.map(m => {
-                    const { hp, spd, ea, pa, ed, pd, element, rarity } = m;
-                    const abilityIDs = m.ability_order.slice(-4);
-                    const abilities = abilityIDs.map(id => {
-                        const ability = m.abilities.find(a => a.id === id);
-                        if (ability?.element === 'Misc') return null;
-                        
-                        const ap = ability.ap + (ability.enchant?.ap || 0);
-                        const additional = ability.additional ? [ability.additional] : [];
-                        
-                        return { name: ability.name, desc: ability.desc, element: ability.element, ap, additional };
-                    }).filter(Boolean);
+        const transformedMiscrits = miscritsData.map(m => {
+            const { hp, spd, ea, pa, ed, pd, element, rarity } = m;
+            const abilityIDs = m.ability_order.slice(-4);
+            const abilities = abilityIDs.map(id => {
+                const ability = m.abilities.find(a => a.id === id);
+                if (ability?.element === 'Misc') return null;
 
-                    const final_evo = m.names[3];
-                    const final_evo_key = final_evo.split(' ').join('_').toLowerCase();
-                    const img_src = `https://cdn.worldofmiscrits.com/miscrits/${final_evo_key}_back.png`;
+                const ap = ability.ap + (ability.enchant?.ap || 0);
+                const additional = ability.additional ? [ability.additional] : [];
 
-                    return {
-                        name: m.names[0], element, rarity, final_evo,
-                        hp: m.hp, spd: m.spd, ea: m.ea, pa: m.pa, ed: m.ed, pd: m.pd,
-                        abilities, img_src
-                    };
-                });
-                
-                setAllMiscrits(transformedMiscrits);
-                
-                // Populate filters
-                const elementSet = new Set(transformedMiscrits.map(m => m.element));
-                const raritySet = new Set(transformedMiscrits.map(m => m.rarity));
-                setElements(['All', ...Array.from(elementSet)]);
-                setRarities(['All', ...Array.from(raritySet)]);
+                return { name: ability.name, desc: ability.desc, element: ability.element, ap, additional };
+            }).filter(Boolean);
 
-            } catch (error) {
-                console.error('Could not fetch or transform the Miscrit data:', error);
-            }
-        };
+            const final_evo = m.names[3];
+            const final_evo_key = final_evo.split(' ').join('_').toLowerCase();
+            const img_src = `https://cdn.worldofmiscrits.com/miscrits/${final_evo_key}_back.png`;
 
-        fetchData();
+            return {
+                name: m.names[0], element, rarity, final_evo,
+                hp: m.hp, spd: m.spd, ea: m.ea, pa: m.pa, ed: m.ed, pd: m.pd,
+                abilities, img_src
+            };
+        });
+
+        setAllMiscrits(transformedMiscrits);
+
+        // Populate filters
+        const elementSet = new Set(transformedMiscrits.map(m => m.element));
+        const raritySet = new Set(transformedMiscrits.map(m => m.rarity));
+        setElements(['All', ...Array.from(elementSet)]);
+        setRarities(['All', ...Array.from(raritySet)]);
     }, []);
 
     // Filter miscrits based on state
@@ -140,7 +129,7 @@ const App = () => {
     };
 
     return (
-        <div className="p-6">
+        <div className="bg-blue-100 p-6">
             <header className="sticky-header sticky top-0 z-10 p-4 mb-8">
                 <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 max-w-7xl mx-auto bg-gray-900/80 rounded-xl p-4 shadow-lg">
                     <div className="flex items-center space-x-4">
@@ -172,7 +161,7 @@ const App = () => {
                 </div>
             </header>
             <main className="max-w-7xl mx-auto">
-                <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-emerald-600 drop-shadow-md">
+                <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-teal-100 to-emerald-800 drop-shadow-md">
                     Miscrit Dex
                 </h1>
                 <div id="miscrit-container" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
