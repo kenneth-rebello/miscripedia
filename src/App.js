@@ -46,7 +46,7 @@ const App = () => {
         console.log(miscritsData);
 
         const transformedMiscrits = miscritsData.map(m => {
-            const { hp, spd, ea, pa, ed, pd, element, rarity } = m;
+            const { element, rarity } = m;
             const abilityIDs = m.ability_order.slice(-4);
             const abilities = abilityIDs.map(id => {
                 const ability = m.abilities.find(a => a.id === id);
