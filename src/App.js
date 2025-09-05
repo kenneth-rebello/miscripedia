@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import './App.css';
 import miscritsData from './data/miscrits.json';
 
@@ -23,12 +24,15 @@ const App = () => {
     });
     const [showFilters, setShowFilters] = useState(false); // Changed to false by default
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedExtras, setSelectedExtras] = useState([]);
+    const [availableExtras, setAvailableExtras] = useState([]);
+    const [isExtrasOpen, setIsExtrasOpen] = useState(false);
 
     // CSS for the sheen effect animation
     const sheenStyles = `
         @keyframes sheen {
             0% { transform: translateX(-100%) skewX(-20deg); }
-            100% { transform: translateX(100%) skewX(-20deg); }
+            100% { transform: translateX(100%) skewX(20deg); }
         }
         .common-sheen:hover::after, .rare-sheen:hover::after, .epic-sheen:hover::after {
             animation: sheen 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -63,11 +67,11 @@ const App = () => {
     };
 
     const rarityShinyBgColors = {
-        'Common': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-600 via-slate-700 to-slate-900',
+        'Common': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-600 to-slate-800',
         'Rare': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-700 via-blue-800 to-blue-950',
-        'Epic': 'bg-[radial-gradient(ellipse_at-top,_var(--tw-gradient-stops))] from-emerald-600 via-emerald-700 to-emerald-900',
-        'Exotic': 'bg-[radial-gradient(ellipse_at-top,_var(--tw-gradient-stops))] from-fuchsia-800 via-fuchsia-900 to-fuchsia-950',
-        'Legendary': 'bg-[radial-gradient(ellipse_at-top,_var(--tw-gradient-stops))] from-amber-300 via-amber-400 to-amber-500',
+        'Epic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600 via-emerald-700 to-emerald-900',
+        'Exotic': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-800 via-fuchsia-900 to-fuchsia-950',
+        'Legendary': 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-800 via-amber-400 to-yellow-800',
     };
 
     const rarityTextColors = {
@@ -131,28 +135,39 @@ const App = () => {
     useEffect(() => {
         const transformedMiscrits = miscritsData.map(m => {
             const { id, element, rarity, names, abilities: rawAbilities } = m;
-            const abilityIDs = m.ability_order.slice(-4);
-            const abilities = abilityIDs.map(i => {
+            let extras = [];
+
+            // This map populates the `abilities` array for the transformed Miscrit and the `extras` array
+            const abilities = m.ability_order.map(i => {
                 const ability = rawAbilities.find(a => a.id === i);
-                if (ability?.element === 'Misc') return null;
+                if (!ability) return null; // Defensive check for missing ability
 
-                const ap = ability?.ap + (ability?.enchant?.ap || 0);
-                const additional = ability?.additional ? [ability.additional] : [];
+                const ap = ability.ap + (ability?.enchant?.ap || 0);
 
-                return { name: ability?.name, desc: ability?.desc, element: ability?.element, ap, additional };
+                // Ensure we only push string values to the extras array
+                if (ability.type && ability.type !== 'Attack' && ability.type !== 'Buff') {
+                    extras.push(ability.type);
+                }
+                if(ability.additional?.length) {
+                    ability.additional.forEach(a => {
+                        if (a.type && a.type !== 'Attack' && a.type !== 'Buff') {
+                            extras.push(a.type);
+                        }
+                    })
+                }
+
+                return { name: ability.name, desc: ability.desc, element: ability.element, ap, additional: ability.additional, type: ability.type };
             }).filter(Boolean);
 
-            // Calculate maxAP
             const maxAP = abilities.length > 0 ? Math.max(...abilities.map(a => a.ap)) : 0;
-
-            let images = names.map(n => `https://cdn.worldofmiscrits.com/miscrits/${n.split(' ').join('_').toLowerCase()}_back.png`);
-
-            let locations = Object.keys(m.locations);
+            const images = names.map(n => `https://cdn.worldofmiscrits.com/miscrits/${n.split(' ').join('_').toLowerCase()}_back.png`);
+            const locations = Object.keys(m.locations);
 
             return {
                 id, name: m.names[0], element, rarity, names, images,
                 hp: m.hp, spd: m.spd, ea: m.ea, pa: m.pa, ed: m.ed, pd: m.pd,
-                abilities, locations, maxAP
+                abilities, locations, maxAP,
+                extras: [...new Set(extras)] 
             };
         });
 
@@ -166,6 +181,9 @@ const App = () => {
 
         const allLocations = new Set(transformedMiscrits.flatMap(m => m.locations));
         setLocations(['All', ...Array.from(allLocations).sort()]);
+
+        const allExtras = new Set(transformedMiscrits.flatMap(m => m.extras));
+        setAvailableExtras(Array.from(allExtras).sort());
 
         // Set loading to false after initial data load
         setIsLoading(false);
@@ -185,6 +203,16 @@ const App = () => {
             ...prevFilters,
             [stat]: value,
         }));
+    };
+
+    const handleExtraToggle = (extra) => {
+        setSelectedExtras(prevExtras => {
+            if (prevExtras.includes(extra)) {
+                return prevExtras.filter(item => item !== extra);
+            } else {
+                return [...prevExtras, extra];
+            }
+        });
     };
 
     const resetStatFilters = () => {
@@ -214,8 +242,9 @@ const App = () => {
         const statMatch = Object.keys(statFilters).every(statKey => {
             return statValues[miscrit[statKey]] >= statFilters[statKey];
         });
+        const extrasMatch = selectedExtras.length === 0 || selectedExtras.every(extra => miscrit.extras.includes(extra));
 
-        return nameMatch && elementMatch && rarityMatch && locationMatch && statMatch;
+        return nameMatch && elementMatch && rarityMatch && locationMatch && statMatch && extrasMatch;
     });
 
     // Miscrit card component
@@ -226,7 +255,6 @@ const App = () => {
         const statWidths = {
             1: 'w-[20%]', 2: 'w-[40%]', 3: 'w-[60%]', 4: 'w-[80%]', 5: 'w-[100%]'
         }
-
 
 
         const stats = Object.keys(statLabels).map(key => ({
@@ -267,7 +295,7 @@ const App = () => {
                         </div> :
                             <h2 className={`text-xl sm:text-3xl font-bold mb-4 card-font`}>{miscrit.name}</h2>
                         }
-                        <div className="bg-slate-400 rounded-lg p-2">
+                        <div className="bg-gray-400 rounded-lg p-2">
                             <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 pt-2">
                                 {stats.map(stat => (
                                     <div key={stat.label} title={stat.label} className="flex items-center space-x-1">
@@ -289,6 +317,19 @@ const App = () => {
                             </div>
                         </div>
                     </div>
+                    {miscrit.extras.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                            {/* This is the corrected section. It ensures `extra` is always a string. */}
+                            {miscrit.extras.map(extra => (
+                                <span
+                                    key={extra}
+                                    className="px-2 py-1 bg-gray-700 text-gray-200 text-xs font-semibold rounded-full"
+                                >
+                                    {extra}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -324,8 +365,7 @@ const App = () => {
     };
 
     return (
-        <div className="bg-black p-3 min-h-screen">
-            {/* The style tag is placed here to define the animation keyframes and classes */}
+        <div className="bg-slate-900 p-3 min-h-screen">
             <style>{sheenStyles}</style>
 
             {isLoading && (
@@ -338,9 +378,12 @@ const App = () => {
                 </div>
             )}
 
-            <header className="sticky-header sticky top-0 z-10 p-4 mb-8">
-                <div className="flex flex-col justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 max-w-7xl mx-auto bg-gray-900/80 rounded-xl p-4 shadow-lg">
-                    <div className="flex flex-row items-center space-x-0 sm:space-x-4 w-full justify-center mb-4 sm:mb-0 gap-3">
+            <header className="sticky-header sticky top-0 z-10 p-4 mb-4">
+                <div className="flex flex-col justify-center items-center gap-4 space-y-4 sm:space-y-0 sm:space-x-8 max-w-7xl mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500">
+                    <h1 className="text-4xl md:text-5xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-teal-100 to-emerald-800 drop-shadow-md">
+                        Miscrit Dex
+                    </h1>
+                    <div className="flex flex-row items-center space-x-0 sm:space-x-4 w-[95%] justify-between gap-3">
                         <input
                             type="text"
                             placeholder="Search by name..."
@@ -352,7 +395,7 @@ const App = () => {
                             onClick={() => setShowFilters(!showFilters)}
                             className="mt-2 sm:mt-0 text-gray-200 text-sm px-4 py-2 rounded-full font-semibold border-2 border-gray-700 hover:bg-gray-700 transition-colors duration-200"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-funnel" viewBox="0 0 16 16">
                                 <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z" />
                             </svg>
                         </button>
@@ -410,12 +453,48 @@ const App = () => {
                                     ))}
                                 </select>
                             </div>
+                            <div className="relative flex flex-row items-center space-x-2">
+                                <span className="text-gray-400 font-semibold text-sm">Extras:</span>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsExtrasOpen(!isExtrasOpen)}
+                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                    >
+                                        <span className="truncate">
+                                            {selectedExtras.length > 0 ? selectedExtras.join(', ') : 'Select extras'}
+                                        </span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${isExtrasOpen ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                        </svg>
+                                    </button>
+                                    {isExtrasOpen && (
+                                        <div className="absolute z-20 w-48 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                            {availableExtras.map(extra => (
+                                                <div
+                                                    key={extra}
+                                                    onClick={() => handleExtraToggle(extra)}
+                                                    className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        readOnly
+                                                        checked={selectedExtras.includes(extra)}
+                                                        className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
+                                                    />
+                                                    <span className="text-gray-200 text-sm">{extra}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                             <div className="relative">
                                 <button
                                     onClick={() => setIsStatFilterOpen(!isStatFilterOpen)}
                                     className="flex items-center space-x-2 bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <span className="font-semibold">Stats</span>
+                                    <span className="font-semibold">Filter Stats</span>
                                     <svg className={`w-4 h-4 transition-transform duration-200 ${isStatFilterOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </button>
                                 {isStatFilterOpen && (
@@ -423,8 +502,8 @@ const App = () => {
                                         <h3 className="text-sm font-semibold text-gray-400 mb-2">Minimum Stat Value:</h3>
                                         <div className="space-y-3">
                                             {Object.keys(statFilters).map(stat => (
-                                                <div key={stat} className="flex items-center justify-between">
-                                                    <span className="text-xs font-semibold uppercase w-12">{stat.toUpperCase()}</span>
+                                                <div key={stat} className="flex items-center justify-start gap-2">
+                                                    <p className="text-xs font-semibold uppercase text-slate-500">{stat.toUpperCase()}</p>
                                                     <div className="flex flex-1 justify-end space-x-1">
                                                         {[1, 2, 3, 4, 5].map(value => (
                                                             <div
@@ -466,9 +545,7 @@ const App = () => {
                 </div>
             </header>
             <main className="max-w-7xl mx-auto" style={{ padding: 0 }}>
-                <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-teal-100 to-emerald-800 drop-shadow-md">
-                    Miscrit Dex
-                </h1>
+
                 <div id="miscrit-container" className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`}>
                     {filteredMiscrits.map(miscrit => (
                         <MiscritCard
