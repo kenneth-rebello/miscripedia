@@ -8,3 +8,54 @@
 .hover-expand:hover {
     min-width: 70%;
 }
+
+
+@keyframes sheen {
+    0% {
+        transform: translateX(-100%) skewX(-20deg);
+    }
+
+    100% {
+        transform: translateX(100%) skewX(20deg);
+    }
+}
+
+.common-sheen:hover::after,
+.rare-sheen:hover::after,
+.epic-sheen:hover::after {
+    animation: sheen 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.exotic-sheen:hover::after,
+.legendary-sheen:hover::after {
+    animation: sheen 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.common-sheen::after,
+.rare-sheen::after,
+.epic-sheen::after,
+.exotic-sheen::after,
+.legendary-sheen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    pointer-events: none;
+    transition: none;
+    z-index: 10;
+}
+
+.common-sheen::after,
+.rare-sheen::after,
+.epic-sheen::after {
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: translateX(-100%) skewX(-20deg);
+}
+
+.exotic-sheen::after,
+.legendary-sheen::after {
+    background: linear-gradient(to right, rgba(255, 215, 0, 0) 0%, rgba(255, 215, 0, 0.5) 50%, rgba(255, 215, 0, 0) 100%);
+    transform: translateX(-100%) skewX(-20deg);
+}
