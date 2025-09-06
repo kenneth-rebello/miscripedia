@@ -6,7 +6,7 @@ import ExpandedMiscritCard from './components/ExpandedMiscritCard';
 import miscritsData from './data/miscrits.json';
 
 import {
-    statValues, getStatColor
+    statValues, getStatColor, rarityValues, extractHitsNumber
 } from './helpers.js';
 
 // Main App compone
@@ -51,7 +51,8 @@ const App = () => {
                 const ability = rawAbilities.find(a => a.id === i);
                 if (!ability) return null;
 
-                const ap = ability.ap + (ability?.enchant?.ap || 0);
+                const numOfTurns = extractHitsNumber(ability.desc);
+                const ap = (ability.ap + (ability?.enchant?.ap || 0)) * numOfTurns;
                 if (ability.type === 'Attack' && ap > maxAP) {
                     maxAP = ap;
                 }
@@ -80,13 +81,15 @@ const App = () => {
 
             const images = names.map(n => `https://cdn.worldofmiscrits.com/miscrits/${n.split(' ').join('_').toLowerCase()}_back.png`);
             const locations = Object.keys(m.locations);
-            const ultimate = abilities.find(a => a.unlockedAt === 30);
+            let offset = rarityValues[rarity] > 2 ? 2 : 0;
+            console.log(offset)
+            const ultimates = abilities.filter(a => a.type==='Attack' && a.ap >= (maxAP-offset));
 
             return {
                 id, name: m.names[0], element, rarity, names, images,
                 hp: m.hp, spd: m.spd, ea: m.ea, pa: m.pa, ed: m.ed, pd: m.pd,
                 abilities,
-                locations, maxAP, ultimate,
+                locations, maxAP, ultimates,
                 extras: [...new Set(extras)]
             };
         });
@@ -213,7 +216,7 @@ const App = () => {
                     {showFilters && (
                         <>
                             <div className="flex flex-col sm:flex-row justify-center items-start flex-wrap gap-y-4 m-0 w-full sm:max-w-7xl mx-auto rounded-xl p-2 transition-all duration-500 ease-in-out">
-                                <div className="flex items-center space-x-4 basis-1/5">
+                                <div className="flex items-center space-x-4 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Elements:</span>
                                     <select
                                         id="element-select"
@@ -226,7 +229,7 @@ const App = () => {
                                         ))}
                                     </select>
                                 </div>
-                                <div className="flex items-center space-x-4 basis-1/5">
+                                <div className="flex items-center space-x-4 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Rarities:</span>
                                     <select
                                         id="rarity-select"
@@ -239,19 +242,7 @@ const App = () => {
                                         ))}
                                     </select>
                                 </div>
-                                <div className="flex items-center space-x-4 basis-1/5">
-                                    <span className="text-gray-400 font-semibold text-sm">Sort by:</span>
-                                    <select
-                                        id="sort-select"
-                                        value={currentSortOrder}
-                                        onChange={(e) => setCurrentSortOrder(e.target.value)}
-                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    >
-                                        <option value="id">ID</option>
-                                        <option value="power">Ultimate AP</option>
-                                    </select>
-                                </div>
-                                <div className="flex items-center space-x-4 basis-1/5">
+                                <div className="flex items-center space-x-4 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Locations:</span>
                                     <select
                                         id="location-select"
@@ -264,7 +255,19 @@ const App = () => {
                                         ))}
                                     </select>
                                 </div>
-                                <div className="relative flex flex-row items-center space-x-2 basis-1/5">
+                                <div className="flex items-center space-x-4 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Sort by:</span>
+                                    <select
+                                        id="sort-select"
+                                        value={currentSortOrder}
+                                        onChange={(e) => setCurrentSortOrder(e.target.value)}
+                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="id">ID</option>
+                                        <option value="power">Ultimate AP</option>
+                                    </select>
+                                </div>
+                                <div className="relative flex flex-row items-center space-x-2 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Buffs:</span>
                                     <div className="relative">
                                         <button
@@ -300,7 +303,7 @@ const App = () => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="relative basis-1/5">
+                                <div className="relative basis-1/4">
                                     <div className="flex items-center space-x-4">
                                         <span className="text-gray-400 font-semibold text-sm">Filter Stats</span>
                                         <button
@@ -332,7 +335,7 @@ const App = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex items-center space-x-2 basis-1/5">
+                                <div className="flex items-center space-x-2 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Show Evolved:</span>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input
@@ -359,7 +362,6 @@ const App = () => {
                 </div>
             </header>
             <main className="max-w-7xl mx-auto" style={{ padding: 0 }}>
-
                 <div id="miscrit-container" className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`}>
                     {filteredMiscrits.map(miscrit => (
                         <MiscritCard

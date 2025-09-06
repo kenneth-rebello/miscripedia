@@ -4,6 +4,10 @@ export const elementColors = {
     'Lightning': 'indigo', 'Earth': 'orange', 'Wind': 'violet',
 };
 
+export const rarityValues = {
+    'Common': 1, 'Rare': 2, 'Epic': 3, 'Exotic': 4, 'Legendary': 5
+}
+
 // Function to get the correct gradient class for single or dual elements
 export const getGradientClass = (element) => {
     const primaryElement = element;
@@ -73,5 +77,13 @@ export const getStatColor = (value) => {
 };
 
 
-
+export const extractHitsNumber = (text) => {
+    const pattern = /hits (\d+) times/;
+    const match = text.match(pattern);
+    if (match) {
+        return parseInt(match[1], 10);
+    } else {
+        return 1;
+    }
+}
 
