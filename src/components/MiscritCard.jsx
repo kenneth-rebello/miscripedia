@@ -25,7 +25,7 @@ const MiscritCard = ({ miscrit, onClick, showEvolved }) => {
 
     return (
         <div
-            className={`${rarityShinyBgColors[miscrit.rarity]} rounded-xl overflow-hidden shadow-xl transform transition-transform duration-300 hover:scale-105 border-2 ${rarityBorderColors[miscrit.rarity]} flex flex-col relative ${sheenClass} cursor-pointer`}
+            className={`${rarityShinyBgColors[miscrit.rarity]} rounded-xl overflow-hidden shadow-xl transform transition-transform duration-300 border-2 ${rarityBorderColors[miscrit.rarity]} flex flex-col relative ${sheenClass} cursor-pointer`}
             onClick={onClick}
         >
             <div className={`relative w-full h-48 sm:h-52 flex justify-center items-center p-4 z-20 bg-gradient-to-br ${getGradientClass(miscrit.element)}`}>
@@ -65,52 +65,55 @@ const MiscritCard = ({ miscrit, onClick, showEvolved }) => {
                         </div>
                     )}
 
-                    <div className={`bg-gray-400 rounded-lg p-2 ${miscrit.extras.length <= 0 && 'mt-9'}`}>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 pt-2">
-                            {stats.map(stat => (
-                                <div key={stat.label} title={stat.label} className="flex items-center space-x-1">
-                                    <div className={`p-1 rounded-full flex items-center justify-center ${iconBgColors[stat.statKey]}`}>
-                                        <div dangerouslySetInnerHTML={{ __html: statIcons[stat.statKey] }} />
-                                    </div>
-                                    <div className="flex flex-col w-full text-left">
-                                        <div className="flex space-x-[2px] mt-1 h-3 rounded overflow-hidden">
-                                            {Array.from({ length: 5 }).map((_, i) => (
-                                                <div
-                                                    key={i}
-                                                    className={`flex-1 rounded-sm ${i < stat.value ? stat.colorClass : 'bg-gray-600'}`}
-                                                ></div>
-                                            ))}
+                    <div className="flip-container">
+                        <div className="flip-inner-container">
+                            <div className={`flip-child ${miscrit.extras.length <= 0 && 'mt-9'} flex justify-center items-center`}>
+                                <div className="w-full h-[75%] bg-slate-300 rounded-lg p-2 grid grid-cols-2 gap-x-4 gap-y-2 m-auto pt-2">
+                                    {stats.map(stat => (
+                                        <div key={stat.label} className="flex items-center space-x-1">
+                                            <div className={`p-1 rounded-full flex items-center justify-center ${iconBgColors[stat.statKey]}`}>
+                                                <div dangerouslySetInnerHTML={{ __html: statIcons[stat.statKey] }} />
+                                            </div>
+                                            <div className="flex flex-col w-full text-left">
+                                                <div className="flex space-x-[2px] mt-1 h-3 rounded overflow-hidden">
+                                                    {Array.from({ length: 5 }).map((_, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className={`flex-1 rounded-sm ${i < stat.value ? stat.colorClass : 'bg-gray-600'}`}
+                                                        ></div>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    ))}
                                 </div>
-                            ))}
+                            </div>
+                            {miscrit.ultimates.length > 0 && (
+                                <div className={`flip-child flip-back flex flex-col justify-center w-full ${miscrit.extras.length <= 0 && 'mt-9'}`}>
+                                    {miscrit.ultimates.map(ult => (
+                                        <div key={ult.name} className="ability">
+                                            <div className="ability-header">
+                                                <div className='ability-icon'>
+                                                    <img
+                                                        src={`https://worldofmiscrits.com/${ult.element.toLowerCase()}.png`}
+                                                        alt={`${ult.element} element`}
+                                                    />
+                                                </div>
+                                                <h4 className='ability-name'>{ult.name}</h4>
+                                                <div className='power'>
+                                                    <p>{ult.ap}</p>
+                                                </div>
+                                            </div>
+                                            <div className='ability-main'>
+                                                <p>{ult.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
-
-                {miscrit.ultimates.length > 0 && (
-                    <div className='flex flex-col w-full'>
-                        {miscrit.ultimates.map(ult => (
-                            <div className="ability">
-                                <div className="ability-header">
-                                    <div className='ability-icon'>
-                                        <img
-                                            src={`https://worldofmiscrits.com/${ult.element.toLowerCase()}.png`}
-                                            alt={`${ult.element} element`}
-                                        />
-                                    </div>
-                                    <h4 className='ability-name'>{ult.name}</h4>
-                                    <div className='power'>
-                                        <p>{ult.ap}</p>
-                                    </div>
-                                </div>
-                                <div className='ability-main'>
-                                    <p>{ult.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
         </div>
     );

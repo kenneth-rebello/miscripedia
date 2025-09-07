@@ -77,6 +77,14 @@ export const getStatColor = (value) => {
 };
 
 
+export const removeDuplicates = (arr, key) => {
+    const uniqueMap = new Map();
+    arr.forEach(item => {
+        uniqueMap.set(item[key], item);
+    });
+    return Array.from(uniqueMap.values());
+};
+
 export const extractHitsNumber = (text) => {
     const pattern = /hits (\d+) times/;
     const match = text.match(pattern);

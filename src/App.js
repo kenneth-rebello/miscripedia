@@ -3,13 +3,14 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import MiscritCard from './components/MiscritCard';
 import ExpandedMiscritCard from './components/ExpandedMiscritCard';
+import AbilityFilterDialog from './components/AbilityFilter';
 import miscritsData from './data/miscrits.json';
 
 import {
-    statValues, getStatColor, rarityValues, extractHitsNumber
+    statValues, getStatColor, rarityValues, extractHitsNumber, removeDuplicates
 } from './helpers.js';
 
-// Main App compone
+
 const App = () => {
 
     // State variables
@@ -31,7 +32,12 @@ const App = () => {
     const [selectedBuffs, setselectedBuffs] = useState([]);
     const [availableBuffs, setAvailableBuffs] = useState([]);
     const [showBuffsFilter, toggleBuffsFilter] = useState(false);
-    const [isStatFilterOpen, setIsStatFilterOpen] = useState(false);
+    const [availableAbilities, setAvailableAbilities] = useState([]);
+    const [abilityFilters, setAbilityFilters] = useState({
+        apply: false, name: '', text: ''
+    });
+    const [showAbilityFilter, toggleAbilityFilter] = useState(false);
+    const [showStatFilter, toggleStatFilter] = useState(false);
     const [statFilters, setStatFilters] = useState({
         hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
     });
@@ -40,6 +46,7 @@ const App = () => {
 
     // Data fetching and transformation logic
     useEffect(() => {
+        let abilityOptions = [];
         const transformedMiscrits = miscritsData.map(m => {
             const { id, element, rarity, names, abilities: rawAbilities } = m;
             let extras = [];
@@ -56,6 +63,15 @@ const App = () => {
                 if (ability.type === 'Attack' && ap > maxAP) {
                     maxAP = ap;
                 }
+
+                const unlockedAt = indexLevelMap[idx];
+                abilityOptions.push({ 
+                    id: ability.id, 
+                    name: ability.name, 
+                    ultimate: unlockedAt > 27 && ap > 29, 
+                    type: ability.type, 
+                    element: ability.element 
+                });
 
                 if (ability.type && ability.type !== 'Attack' && ability.type !== 'Buff') {
                     extras.push(ability.type);
@@ -75,15 +91,14 @@ const App = () => {
                     ap,
                     additional: ability.additional,
                     type: ability.type,
-                    unlockedAt: indexLevelMap[idx]
+                    unlockedAt
                 };
             }).filter(Boolean).reverse();
 
             const images = names.map(n => `https://cdn.worldofmiscrits.com/miscrits/${n.split(' ').join('_').toLowerCase()}_back.png`);
             const locations = Object.keys(m.locations);
-            let offset = rarityValues[rarity] > 2 ? 2 : 0;
-            console.log(offset)
-            const ultimates = abilities.filter(a => a.type==='Attack' && a.ap >= (maxAP-offset));
+            let offset = rarityValues[rarity] > 2 ? maxAP > 35 ? 5 : 2 : 0;
+            const ultimates = abilities.filter(a => a.type === 'Attack' && a.ap >= (maxAP - offset));
 
             return {
                 id, name: m.names[0], element, rarity, names, images,
@@ -94,7 +109,6 @@ const App = () => {
             };
         });
 
-        console.log(transformedMiscrits)
         setAllMiscrits(transformedMiscrits);
 
         // Populate filters
@@ -108,6 +122,9 @@ const App = () => {
 
         const allExtras = new Set(transformedMiscrits.flatMap(m => m.extras));
         setAvailableBuffs(Array.from(allExtras).sort());
+
+        const allAbilities = removeDuplicates(abilityOptions, 'id');
+        setAvailableAbilities(allAbilities.sort((a,b) => b.name - a.name));
 
         // Set loading to false after initial data load
         setIsLoading(false);
@@ -129,6 +146,11 @@ const App = () => {
         }));
     };
 
+    const handleAbilityFilterChange = (filters) => {
+        setAbilityFilters(filters);
+        toggleAbilityFilter(false);
+    }
+
     const handleExtraToggle = (extra) => {
         setselectedBuffs(prevExtras => {
             if (prevExtras.includes(extra)) {
@@ -146,10 +168,12 @@ const App = () => {
         setCurrentLocationFilter('All')
         setCurrentSortOrder('id')
         setSearchTerm('')
+        setAbilityFilters({ apply: false });
         setselectedBuffs([])
         toggleBuffsFilter(false)
-        setIsStatFilterOpen(false)
+        toggleStatFilter(false)
         setStatFilters({ hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1 });
+        setShowFilters(false);
     }
 
 
@@ -165,6 +189,14 @@ const App = () => {
     const filteredMiscrits = sortedMiscrits.filter(miscrit => {
         const searchTermLower = searchTerm.toLowerCase();
         const nameMatch = miscrit.names.some(name => name.toLowerCase().includes(searchTermLower));
+        let abilityMatch = true;
+        if (abilityFilters.apply) {
+            const { name, text } = abilityFilters;
+            const searchString = text ? text.toLowerCase() : text;
+            const textMatch = ability => text ? ability.desc.toLowerCase().includes(searchString) : true;
+            abilityMatch = miscrit.abilities.some(a => a.name === name && textMatch(a))
+            if(abilityMatch) console.log(miscrit)
+        }
         const elementMatch = currentElementFilter === 'All' || miscrit.element === currentElementFilter;
         const rarityMatch = currentRarityFilter === 'All' || miscrit.rarity === currentRarityFilter;
         const locationMatch = currentLocationFilter === 'All' || miscrit.locations.includes(currentLocationFilter);
@@ -173,7 +205,8 @@ const App = () => {
         });
         const extrasMatch = selectedBuffs.length === 0 || selectedBuffs.every(extra => miscrit.extras.includes(extra));
 
-        return nameMatch && elementMatch && rarityMatch && locationMatch && statMatch && extrasMatch;
+        return nameMatch && abilityMatch
+            && elementMatch && rarityMatch && locationMatch && statMatch && extrasMatch;
     });
 
 
@@ -307,13 +340,13 @@ const App = () => {
                                     <div className="flex items-center space-x-4">
                                         <span className="text-gray-400 font-semibold text-sm">Filter Stats</span>
                                         <button
-                                            onClick={() => setIsStatFilterOpen(!isStatFilterOpen)}
+                                            onClick={() => toggleStatFilter(!showStatFilter)}
                                             className="flex items-center space-x-2 bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         >
-                                            <svg className={`w-4 h-4 transition-transform duration-200 ${isStatFilterOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                            <svg className={`w-4 h-4 transition-transform duration-200 ${showStatFilter ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                         </button>
                                     </div>
-                                    {isStatFilterOpen && (
+                                    {showStatFilter && (
                                         <div className="absolute top-full mt-2 w-64 p-4 rounded-xl shadow-lg bg-gray-800 z-20 transition-opacity duration-300">
                                             <h3 className="text-sm font-semibold text-gray-400 mb-2">Minimum Stat Value:</h3>
                                             <div className="space-y-3">
@@ -351,6 +384,12 @@ const App = () => {
                             </div>
                             <div className="flex flex-row items-center justify-end m-0 space-x-0 sm:space-x-4 w-[95%]">
                                 <button
+                                    onClick={() => toggleAbilityFilter(true)}
+                                    className="bg-teal-800 text-white text-sm px-3 py-1 font-semibold hover:bg-teal-600 transition-colors duration-200"
+                                >
+                                    Explore Abilities
+                                </button>
+                                <button
                                     onClick={resetFilters}
                                     className="bg-red-800 text-white text-sm px-3 py-1 font-semibold hover:bg-red-700 transition-colors duration-200"
                                 >
@@ -378,6 +417,10 @@ const App = () => {
                     miscrit={allMiscrits.find(m => m.id === expandedMiscritId)}
                     onClose={() => setExpandedMiscritId(null)}
                 />
+            )}
+
+            {showAbilityFilter && (
+                <AbilityFilterDialog filters={abilityFilters} abilities={availableAbilities} onClose={handleAbilityFilterChange} />
             )}
         </div>
     );
