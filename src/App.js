@@ -209,7 +209,7 @@ const App = () => {
         const statMatch = Object.keys(statFilters).every(statKey => {
             return statValues[miscrit[statKey]] >= statFilters[statKey];
         });
-        const extrasMatch = selectedBuffs.length === 0 || selectedBuffs.every(extra => miscrit.extras.includes(extra));
+        const extrasMatch = selectedBuffs.length === 0 || selectedBuffs.some(extra => miscrit.extras.includes(extra));
 
         return nameMatch && abilityMatch
             && elementMatch && rarityMatch && locationMatch && statMatch && extrasMatch;
@@ -388,7 +388,7 @@ const App = () => {
                                     </label>
                                 </div>
                             </div>
-                            <div className="flex flex-row items-center justify-end m-0 space-x-0 sm:space-x-4 w-[95%]">
+                            <div className="flex flex-row items-center justify-end gap-2 m-0 space-x-0 sm:space-x-4 w-[95%]">
                                 <button
                                     onClick={() => toggleAbilityFilter(true)}
                                     className="bg-teal-800 text-white text-sm px-3 py-1 font-semibold hover:bg-teal-600 transition-colors duration-200"
