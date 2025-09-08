@@ -139,7 +139,7 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                         className="h-full flex flex-row items-center gap-3 overflow-x-hidden overflow-y-hidden"
                     >
                         {miscrit.abilities.map(ability => (
-                            <div key={ability.name} className="ability-desktop min-w-[250px] p-4 bg-gray-800 rounded-lg shadow-lg flex-shrink-0 border-2 border-slate-400">
+                            <div key={ability.name} className="ability-desktop w-[280px] p-4 bg-gray-800 rounded-lg shadow-lg flex-shrink-0 border-2 border-slate-400">
                                 <div className='flex items-center space-x-2'>
                                     <img
                                         src={ability.imgSrc}

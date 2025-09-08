@@ -1,3 +1,9 @@
+.header-font {
+    font-family: "Freckle Face", system-ui;
+    font-weight: 400;
+    font-style: normal;
+}
+
 .card-font {
     font-family: "Righteous", sans-serif;
     font-weight: 400;

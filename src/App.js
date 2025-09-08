@@ -4,10 +4,11 @@ import './App.css';
 import MiscritCard from './components/MiscritCard';
 import ExpandedMiscritCard from './components/ExpandedMiscritCard';
 import AbilityFilterDialog from './components/AbilityFilter';
-import miscritsData from './data/miscrits.json';
 
+import miscritsData from './data/miscrits.json';
+import MiscritLogo from './data/MiscritsLogo.png';
 import {
-    statValues, getStatColor, rarityValues, extractHitsNumber, removeDuplicates
+    statValues, getStatColor, rarityValues, removeDuplicates
 } from './helpers.js';
 
 
@@ -58,7 +59,7 @@ const App = () => {
                 const ability = rawAbilities.find(a => a.id === i);
                 if (!ability) return null;
 
-                const numOfTurns = extractHitsNumber(ability.desc);
+                const numOfTurns = (ability?.times || 1) + (ability?.enchant?.times || 0);
                 const ap = (ability.ap + (ability?.enchant?.ap || 0)) * numOfTurns;
                 if (ability.type === 'Attack' && ap > maxAP) {
                     maxAP = ap;
@@ -66,7 +67,8 @@ const App = () => {
 
                 let imgSrcName = (ability.type === 'Attack' ? ability.element : ability.type).toLowerCase();
                 if(imgSrcName === 'buff' && ability.desc.includes('Lower')) imgSrcName = 'debuff';
-                if(imgSrcName === 'dot' && ability.element) imgSrcName = `${ability.element.toLowerCase()}_poison`
+                else if(imgSrcName === 'dot' && ability.element) imgSrcName = `${ability.element.toLowerCase()}_poison`
+                else if(imgSrcName === 'hot') imgSrcName = 'heal';
                 const imgSrc = `https://worldofmiscrits.com/${imgSrcName}.png`
 
                 const unlockedAt = indexLevelMap[idx];
@@ -115,7 +117,6 @@ const App = () => {
             };
         });
 
-        console.log(transformedMiscrits);
         setAllMiscrits(transformedMiscrits);
 
         // Populate filters
@@ -232,9 +233,12 @@ const App = () => {
 
             <header className="sticky-header sticky top-0 z-10 p-4 mb-4">
                 <div className="flex flex-col justify-center items-center gap-2 space-y-4 sm:space-y-0 sm:space-x-8 max-w-7xl mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500">
-                    <h1 className="text-4xl md:text-5xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-teal-100 to-emerald-800 drop-shadow-md">
-                        Miscrit Dex
-                    </h1>
+                    <div className="flex items-center gap-0">
+                        <img src={MiscritLogo} alt="Miscrits" className="h-[4rem]"/>
+                        <h1 className="text-3xl md:text-[2rem] font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-lime-200 to-lime-600 drop-shadow-md header-font">
+                            -dex
+                        </h1>
+                    </div>
                     <div className="flex flex-row items-center space-x-0 sm:space-x-4 w-[95%] justify-between gap-3">
                         <input
                             type="text"
