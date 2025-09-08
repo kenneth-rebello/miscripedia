@@ -67,10 +67,10 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                             className="absolute top-2 right-2 w-10 h-10 rounded-full"
                         />
                         {/* Desktop Image Section */}
-                        <div className="flex justify-around items-end gap-4 w-full h-full p-4">
+                        <div className="hidden md:flex justify-around items-end gap-4 w-full h-full p-4">
                             {miscrit.images.map((image, index) => (
                                 <div key={index} className={`flex flex-col items-center justify-center`}>
-                                    <img src={image} alt={miscrit.names[index]} className={`h-auto max-h-[250px] w-[${28*(index+1) - (4*(index+1))}%] object-contain drop-shadow-md hover-expand`} />
+                                    <img src={image} alt={miscrit.names[index]} className={`h-auto max-h-[250px] w-[${28 * (index + 1) - (4 * (index + 1))}%] object-contain drop-shadow-md hover-expand`} />
                                     <h2 className={`text-xl md:text-2xl text-center card-font font-bold ${rarityTextColors[miscrit.rarity]}`} key={index}>{miscrit.names[index]}</h2>
                                 </div>
                             ))}
@@ -103,14 +103,14 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                                         <div
                                             key={index}
                                             onClick={() => setSelectedMiscritIndex(index)}
-                                            className="flex flex-col items-center justify-end p-2 transition-all duration-500 cursor-pointer"
+                                            className="flex flex-col items-center justify-end gap-1 p-2 transition-all duration-500 cursor-pointer"
                                         >
                                             <img
                                                 src={image}
                                                 alt={miscrit.names[index]}
-                                                className="w-auto h-full object-contain drop-shadow-md transition-all duration-500"
+                                                className={`h-auto w-[${(20 * (index + 1)) - (2 * (index + 1))}%] min-w-[35%] object-contain drop-shadow-md transition-all duration-500`}
                                             />
-                                            <h2 className={`text-xl text-center font-bold card-font transition-all duration-500 ${rarityTextColors[miscrit.rarity]}`}>
+                                            <h2 className={`text-lg text-center font-bold card-font transition-all duration-500 ${rarityTextColors[miscrit.rarity]}`}>
                                                 {miscrit.names[index]}
                                             </h2>
                                         </div>
@@ -209,7 +209,14 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                                     <div className={`absolute top-full mt-2 w-48 p-2 bg-slate-900 border border-slate-700 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10
                                         ${(index % 2 !== 0) ? 'right-0' : 'left-1/2 transform -translate-x-1/2'}`}>
                                         <p className="font-semibold mb-1">{ability.name}</p>
-                                        <p className="text-gray-400 text-xs mb-1">AP: {ability.ap === 'NaN' ? 'N/A' : ability.ap}</p>
+                                        <div className="w-[80%] flex justify-between items-center m-auto">
+                                            {!Number.isNaN(ability.ap) ? <div className='text-xs text-gray-400'>
+                                                <p>AP: {ability.ap}</p>
+                                            </div> : <div></div>}
+                                            <div className='text-xs text-gray-400'>
+                                                <p>Level: {ability.unlockedAt}</p>
+                                            </div>
+                                        </div>
                                         <p className="text-gray-300">{ability.desc}</p>
                                         <div className={`absolute bottom-full w-3 h-3 bg-slate-900 rotate-45 border-l border-t border-slate-700
                                             ${(index % 2 !== 0) ? 'right-2' : 'left-1/2 transform -translate-x-1/2'}`}></div>
