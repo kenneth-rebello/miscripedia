@@ -56,7 +56,7 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
             onClick={onClose}
         >
             <div
-                className={`relative w-full h-[90vh] md:h-[75vh] max-w-6xl rounded-xl shadow-2xl transition-all duration-300 transform scale-95 border-2 ${rarityBorderColors[miscrit.rarity]} flex flex-col`}
+                className={`relative w-full h-[90vh] md:h-[80vh] max-w-6xl rounded-xl shadow-2xl transition-all duration-300 transform scale-95 border-2 ${rarityBorderColors[miscrit.rarity]} flex flex-col`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className={`${rarityShinyBgColors[miscrit.rarity]} rounded-xl rounded-b-none overflow-hidden flex flex-col relative flex-grow-0 md:flex-shrink-0`}>
@@ -67,10 +67,10 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                             className="absolute top-2 right-2 w-10 h-10 rounded-full"
                         />
                         {/* Desktop Image Section */}
-                        <div className="hidden md:grid grid-cols-4 items-end gap-4 w-full h-full p-4">
+                        <div className="flex justify-around items-end gap-4 w-full h-full p-4">
                             {miscrit.images.map((image, index) => (
-                                <div key={index} className={`flex flex-col items-center justify-end w-full h-full`}>
-                                    <img src={image} alt={miscrit.names[index]} className="h-full w-auto object-contain drop-shadow-md" />
+                                <div key={index} className={`flex flex-col items-center justify-center`}>
+                                    <img src={image} alt={miscrit.names[index]} className={`h-auto max-h-[250px] w-[${28*(index+1) - (4*(index+1))}%] object-contain drop-shadow-md hover-expand`} />
                                     <h2 className={`text-xl md:text-2xl text-center card-font font-bold ${rarityTextColors[miscrit.rarity]}`} key={index}>{miscrit.names[index]}</h2>
                                 </div>
                             ))}
@@ -132,29 +132,34 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                     </div>
                 </div>
                 {/* Desktop Abilities Section */}
-                <div className="relative h-full flex-grow bg-slate-700 p-4 hidden md:block">
+                <div className="relative h-full flex-grow bg-slate-700 p-4 hidden md:block rounded-b-lg">
                     <div
                         id="abilities-desktop"
                         ref={abilitiesContainerRef}
-                        className="h-full flex flex-row items-center gap-3 overflow-x-hidden overflow-y-hidden"
+                        className="h-full flex flex-row items-center gap-3 overflow-hidden"
                     >
                         {miscrit.abilities.map(ability => (
-                            <div key={ability.name} className="ability-desktop w-[280px] p-4 bg-gray-800 rounded-lg shadow-lg flex-shrink-0 border-2 border-slate-400">
-                                <div className='flex items-center space-x-2'>
+                            <div key={ability.name} className="ability-desktop w-[280px] h-[175px] p-4 bg-gray-800 rounded-lg shadow-lg flex-shrink-0 border-2 border-slate-400 hover:bg-gray-700 cursor-pointer">
+                                <div className='flex items-center space-x-4'>
                                     <img
                                         src={ability.imgSrc}
                                         alt={`${ability.element} element`}
                                         className='w-8 h-8'
                                     />
-                                    <div className='flex flex-col'>
-                                        <h4 className='ability-name text-lg font-semibold text-white'>{ability.name}</h4>
-                                        <div className='ability-power text-sm text-gray-400'>
-                                            <p>AP: {ability.ap === 'NaN' ? 'N/A' : ability.ap}</p>
+                                    <div className='flex flex-col w-full pr-5'>
+                                        <h4 className='text-xl font-semibold text-white'>{ability.name}</h4>
+                                        <div className="w-full flex justify-between items-center">
+                                            {!Number.isNaN(ability.ap) ? <div className='text-sm text-gray-400'>
+                                                <p>AP: {ability.ap}</p>
+                                            </div> : <div></div>}
+                                            <div className='text-sm text-gray-400'>
+                                                <p>Level: {ability.unlockedAt}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className='ability-main text-sm text-gray-300 mt-2'>
-                                    <p>{ability.desc}</p>
+                                <div className='text-sm text-gray-300 mt-2'>
+                                    <p className="italic">{ability.desc}</p>
                                 </div>
                             </div>
                         ))}

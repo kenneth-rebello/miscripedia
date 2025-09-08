@@ -32,7 +32,7 @@ const MiscritCard = ({ miscrit, onClick, showEvolved }) => {
                 <img
                     src={`https://worldofmiscrits.com/${miscrit.element.toLowerCase()}.png`}
                     alt={`${miscrit.element} element`}
-                    className="absolute top-2 left-2 w-8 h-8 rounded-full"
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full"
                 />
                 {
                     showEvolved ? <div className="flex justify-between w-full h-full p-4 items-end">

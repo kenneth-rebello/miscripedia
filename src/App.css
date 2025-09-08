@@ -12,7 +12,7 @@
 
 
 .hover-expand:hover {
-    min-width: 70%;
+    width: unset;
 }
 
 
