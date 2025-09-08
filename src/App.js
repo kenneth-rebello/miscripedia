@@ -64,13 +64,18 @@ const App = () => {
                     maxAP = ap;
                 }
 
+                let imgSrcName = (ability.type === 'Attack' ? ability.element : ability.type).toLowerCase();
+                if(imgSrcName === 'buff' && ability.desc.includes('Lower')) imgSrcName = 'debuff';
+                if(imgSrcName === 'dot' && ability.element) imgSrcName = `${ability.element.toLowerCase()}_poison`
+                const imgSrc = `https://worldofmiscrits.com/${imgSrcName}.png`
+
                 const unlockedAt = indexLevelMap[idx];
                 abilityOptions.push({ 
                     id: ability.id, 
                     name: ability.name, 
                     ultimate: unlockedAt > 27 && ap > 29, 
                     type: ability.type, 
-                    element: ability.element 
+                    element: ability.element
                 });
 
                 if (ability.type && ability.type !== 'Attack' && ability.type !== 'Buff') {
@@ -91,14 +96,15 @@ const App = () => {
                     ap,
                     additional: ability.additional,
                     type: ability.type,
-                    unlockedAt
+                    unlockedAt,
+                    imgSrc
                 };
             }).filter(Boolean).reverse();
 
             const images = names.map(n => `https://cdn.worldofmiscrits.com/miscrits/${n.split(' ').join('_').toLowerCase()}_back.png`);
             const locations = Object.keys(m.locations);
             let offset = rarityValues[rarity] > 2 ? maxAP > 35 ? 5 : 2 : 0;
-            const ultimates = abilities.filter(a => a.type === 'Attack' && a.ap >= (maxAP - offset));
+            const ultimates = abilities.filter(a => a.type === 'Attack' && (a.unlockedAt === 30 || a.ap >= (maxAP - offset)))
 
             return {
                 id, name: m.names[0], element, rarity, names, images,
@@ -109,6 +115,7 @@ const App = () => {
             };
         });
 
+        console.log(transformedMiscrits);
         setAllMiscrits(transformedMiscrits);
 
         // Populate filters
@@ -195,7 +202,6 @@ const App = () => {
             const searchString = text ? text.toLowerCase() : text;
             const textMatch = ability => text ? ability.desc.toLowerCase().includes(searchString) : true;
             abilityMatch = miscrit.abilities.some(a => a.name === name && textMatch(a))
-            if(abilityMatch) console.log(miscrit)
         }
         const elementMatch = currentElementFilter === 'All' || miscrit.element === currentElementFilter;
         const rarityMatch = currentRarityFilter === 'All' || miscrit.rarity === currentRarityFilter;

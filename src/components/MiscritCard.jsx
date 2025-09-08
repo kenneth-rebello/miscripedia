@@ -89,22 +89,23 @@ const MiscritCard = ({ miscrit, onClick, showEvolved }) => {
                                 </div>
                             </div>
                             {miscrit.ultimates.length > 0 && (
-                                <div className={`flip-child flip-back flex flex-col justify-center w-full ${miscrit.extras.length <= 0 && 'mt-9'}`}>
+                                <div className={`flip-child flip-back flex flex-col justify-center gap-2 w-full ${miscrit.extras.length <= 0 && 'mt-9'}`}>
                                     {miscrit.ultimates.map(ult => (
-                                        <div key={ult.name} className="ability">
-                                            <div className="ability-header">
-                                                <div className='ability-icon'>
-                                                    <img
-                                                        src={`https://worldofmiscrits.com/${ult.element.toLowerCase()}.png`}
-                                                        alt={`${ult.element} element`}
-                                                    />
-                                                </div>
-                                                <h4 className='ability-name'>{ult.name}</h4>
-                                                <div className='power'>
-                                                    <p>{ult.ap}</p>
+                                        <div key={ult.name} className="ability-desktop min-w-[250px] p-2 bg-gray-800 rounded-lg shadow-lg flex-shrink-0">
+                                            <div className='flex items-center space-x-2'>
+                                                <img
+                                                    src={ult.imgSrc}
+                                                    alt={`${ult.element} element`}
+                                                    className='w-8 h-8'
+                                                />
+                                                <div className='flex flex-col items-center w-[80%]'>
+                                                    <h4 className='text-lg font-semibold text-white'>{ult.name}</h4>
+                                                    <div className='text-sm text-gray-400'>
+                                                        <p>AP: {ult.ap === 'NaN' ? 'N/A' : ult.ap}</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className='ability-main'>
+                                            <div className='text-sm text-gray-300 mt-2'>
                                                 <p>{ult.desc}</p>
                                             </div>
                                         </div>
