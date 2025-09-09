@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import './App.css';
 import MiscritCard from './components/MiscritCard';
@@ -20,15 +20,16 @@ const App = () => {
     const [elements, setElements] = useState(['All']);
     const [rarities, setRarities] = useState(['All']);
     const [locations, setLocations] = useState(['All']);
-    const [showEvolved, setShowEvolved] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const [expandedMiscritId, setExpandedMiscritId] = useState(null);
 
-    const [showFilters, setShowFilters] = useState(false); // Changed to false by default
+    const [showEvolved, setShowEvolved] = useState(false);
+    const [showFilters, setShowFilters] = useState(false); 
+
     const [currentElementFilter, setCurrentElementFilter] = useState('All');
     const [currentRarityFilter, setCurrentRarityFilter] = useState('All');
     const [currentLocationFilter, setCurrentLocationFilter] = useState('All');
     const [currentSortOrder, setCurrentSortOrder] = useState('id');
+    
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBuffs, setselectedBuffs] = useState([]);
     const [availableBuffs, setAvailableBuffs] = useState([]);
@@ -36,7 +37,7 @@ const App = () => {
     const [showBuffsFilter, toggleBuffsFilter] = useState(false);
     const [availableAbilities, setAvailableAbilities] = useState([]);
     const [abilityFilters, setAbilityFilters] = useState({
-        apply: false, name: '', text: ''
+        apply: false, name: '', text: '', ultBuff: ''
     });
     const [showAbilityFilter, toggleAbilityFilter] = useState(false);
     const [showStatFilter, toggleStatFilter] = useState(false);
@@ -44,6 +45,43 @@ const App = () => {
         hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
     });
 
+    
+    const [isLoading, setIsLoading] = useState(true);
+    const [showHeader, setShowHeader] = useState(true);
+    const sentinelRef = useRef(null);
+    const sentinelPositionRef = useRef(0);
+    const [forceHeader, setForceHeader] = useState(false);
+    const forceHeaderRef = useRef(false);
+
+    const checkForcedHeader = () => {
+        if(sentinelRef.current) {
+            const rect = sentinelRef.current.getBoundingClientRect();
+            if(rect) {
+                setShowHeader(rect.y > 0);
+                if(forceHeaderRef.current) {
+                    const oldY = sentinelPositionRef.current;
+                    const newY = rect.y;
+                    if (Math.abs(oldY - newY) > 5)
+                        setForceHeader(false);
+                }
+            }
+        }
+    }
+    useEffect(() => {
+        if(forceHeader && sentinelRef.current) {
+            const rect = sentinelRef.current.getBoundingClientRect();
+            if(rect) 
+                sentinelPositionRef.current = rect.y;
+        }
+        forceHeaderRef.current = forceHeader;
+    }, [forceHeader])
+
+    useEffect(() => {
+        window.addEventListener('scroll',  () => {
+            checkForcedHeader();
+        })
+        // eslint-disable-next-line
+    }, []);
 
 
     // Data fetching and transformation logic
@@ -255,12 +293,12 @@ const App = () => {
                 </div>
             )}
 
-            <header className="sticky-header sticky top-0 z-10 p-4 mb-4">
-                <div className="flex flex-col justify-center items-center gap-2 space-y-4 sm:space-y-0 sm:space-x-8 max-w-7xl mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500">
-                    <div className="flex items-center gap-0">
+            <header className="sticky-header sticky top-2 z-10 p-4 mb-4">
+                {showHeader || forceHeader ? (<div className={`flex flex-col justify-center items-center gap-2 space-y-4 sm:space-y-0 sm:space-x-8 max-w-8xl mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500`}>
+                    <div className="flex items-center justify-center sm:justify-start gap-4">
                         <img src={MiscritLogo} alt="Miscrits" className="h-[4rem]" />
                         <h1 className="text-3xl md:text-[2rem] font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-lime-200 to-lime-600 drop-shadow-md header-font">
-                            -dex
+                            Critdex
                         </h1>
                     </div>
                     <div className="flex flex-row items-center space-x-0 sm:space-x-4 w-[95%] justify-between gap-3">
@@ -280,9 +318,10 @@ const App = () => {
                             </svg>
                         </button>
                     </div>
+
                     {showFilters && (
                         <>
-                            <div className="flex flex-col sm:flex-row justify-center items-start flex-wrap gap-y-4 m-0 w-full sm:max-w-7xl mx-auto rounded-xl p-2 transition-all duration-500 ease-in-out">
+                            <div className="flex flex-col sm:flex-row justify-between items-start flex-wrap gap-y-4 m-0 w-full sm:max-w-7xl mx-auto rounded-xl p-2 transition-all duration-500 ease-in-out">
                                 <div className="flex items-center space-x-4 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Elements:</span>
                                     <select
@@ -416,6 +455,21 @@ const App = () => {
                                     </label>
                                 </div>
                             </div>
+                            {abilityFilters.apply && <div className='w-[99%] flex items-center justify-start gap-4'>
+                                <p className="text-gray-400 font-semibold text-sm">Ability filters</p>
+                                {abilityFilters.name && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Name:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.name}</p>
+                                </div>}
+                                {abilityFilters.text && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Description:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.text}</p>
+                                </div>}
+                                {abilityFilters.ultBuff && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Ultimate buff:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.ultBuff.replace(/<|>/g, '')}</p>
+                                </div>}
+                            </div>}
                             <div className="flex flex-row items-center justify-end gap-2 m-0 space-x-0 sm:space-x-4 w-[95%]">
                                 <button
                                     onClick={() => toggleAbilityFilter(true)}
@@ -432,9 +486,12 @@ const App = () => {
                             </div>
                         </>
                     )}
-                </div>
+                </div>) : (<div className={`flex justify-center items-center gap-2 space-y-4 sm:space-y-0  mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500 w-fit`} onClick={() => setForceHeader(true)}>
+                        <img src={MiscritLogo} alt="Miscrits" className="h-[2rem]" />
+                </div>)}
             </header>
-            <main className="max-w-7xl mx-auto" style={{ padding: 0 }}>
+            <main className="max-w-8xl mx-auto p-7 pt-0">
+                <div ref={sentinelRef} className="h-px w-full"></div>
                 <div id="miscrit-container" className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`}>
                     {filteredMiscrits.map(miscrit => (
                         <MiscritCard
@@ -454,9 +511,9 @@ const App = () => {
             )}
 
             {showAbilityFilter && (
-                <AbilityFilterDialog 
-                    filters={abilityFilters} 
-                    abilities={availableAbilities} onClose={handleAbilityFilterChange} 
+                <AbilityFilterDialog
+                    filters={abilityFilters}
+                    abilities={availableAbilities} onClose={handleAbilityFilterChange}
                     ultBuffs={availableUltBuffs}
                 />
             )}

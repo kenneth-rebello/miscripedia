@@ -13,9 +13,11 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
     const [availableElements, setAvailableElements] = useState([]);
 
     const [selectedLabel, setSelectedLabel] = useState('');
+    const [selectedStat, setSelectedStat] = useState('');
     const [selectedAp, setSelectedAp] = useState('');
     const [selectedTurns, setSelectedTurns] = useState('');
     const [selectedUltBuff, setSelectedUltBuff] = useState('');
+    const [statOptions, setStatOptions] = useState([]);
     const [apOptions, setApOptions] = useState([]);
     const [turnsOptions, setTurnsOptions] = useState([]);
 
@@ -23,7 +25,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
         if (ultBuffs?.length) {
             const labels = new Set();
             ultBuffs.filter(Boolean).forEach(item => {
-                const label = item.split(' [')[0].split(' (x')[0].split(' +')[0];
+                const label = item.split(' [')[0].split(' (x')[0].split(' +')[0].split(' <')[0];
                 labels.add(label.trim());
             });
             return Array.from(labels).sort();
@@ -61,15 +63,18 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
         // Reset selections and options when the label changes
         setSelectedAp('');
         setSelectedTurns('');
+        setSelectedStat('');
         if (!selectedLabel) {
             setApOptions([]);
             setTurnsOptions([]);
+            setStatOptions([]);
             return;
         }
 
         const filteredItems = ultBuffs.filter(item => item && item.startsWith(selectedLabel));
         const apValues = new Set();
         const turnsValues = new Set();
+        const statValues = new Set();
 
         filteredItems.forEach(item => {
             const apMatch = item.match(/\[(\d+)\]/);
@@ -80,18 +85,27 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             if (turnsMatch) {
                 turnsValues.add(turnsMatch[1]);
             }
+            const statMatch = item.match(/<(.*?)>/);
+            if (statMatch) {
+                statValues.add(statMatch[1]);
+            }
         });
 
         const sortedAp = Array.from(apValues).sort((a, b) => a - b);
         const sortedTurns = Array.from(turnsValues).sort((a, b) => a - b);
+        const sortedStats = Array.from(statValues).sort((a, b) => a - b);
 
         setApOptions(sortedAp);
         setTurnsOptions(sortedTurns);
+        setStatOptions(sortedStats);
     }, [selectedLabel, ultBuffs]);
 
     const combinedString = useMemo(() => {
         if (!selectedLabel) return '';
         let result = selectedLabel;
+        if (selectedStat) {
+            result += ` <${selectedStat}>`
+        }
         if (selectedAp) {
             result += ` [${selectedAp}]`;
         }
@@ -99,15 +113,15 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             result += ` (x${selectedTurns})`;
         }
         return result.trim();
-    }, [selectedLabel, selectedAp, selectedTurns]);
+    }, [selectedLabel, selectedStat, selectedAp, selectedTurns]);
 
     // Handlers
     const handleCancel = () => {
         onClose({
             apply: filters.apply,
-            name: selectedAbility,
-            text: abilitySearchTerm,
-            ultBuff: selectedUltBuff
+            name: filters.name,
+            text: filters.text,
+            ultBuff: filters.ultBuff
         });
     }
 
@@ -267,14 +281,14 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                                 Ultimate Buffs
                             </p>
                             {selectedUltBuff && <p className='text-slate-100 text-xs'>
-                                {selectedUltBuff}
+                                {selectedUltBuff.replace(/<|>/g, '')}
                             </p>}
                         </div>
                         <div className="flex flex-row flex-wrap gap-2 mt-1">
                             <select
                                 value={selectedLabel}
                                 onChange={e => setSelectedLabel(e.target.value)}
-                                className="w-full sm:flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="" disabled>-- Label --</option>
                                 {uniqueLabels.map(label => (
@@ -284,12 +298,24 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                                 ))}
                             </select>
                             <select
+                                value={selectedStat}
+                                onChange={e => setSelectedStat(e.target.value)}
+                                className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="" disabled>-- Stat --</option>
+                                {statOptions.map(stat => (
+                                    <option key={stat} value={stat}>
+                                        {stat}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
                                 value={selectedAp}
                                 onChange={e => setSelectedAp(e.target.value)}
                                 className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 disabled={apOptions.length === 0}
                             >
-                                <option value="">{apOptions.length === 0 ? '-- AP --' : '-- AP --'}</option>
+                                <option value="">-- AP --</option>
                                 {apOptions.map(ap => (
                                     <option key={ap} value={ap}>
                                         {ap}

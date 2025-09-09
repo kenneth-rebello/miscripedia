@@ -116,20 +116,26 @@ export const extractBuffs = (buff, desc) => {
     } else if (buff.type === 'StatSteal') {
         if (buff.keys) {
             let label = buff.type.replace(/([a-z])([A-Z])/g, '$1 $2');
-            const buffs = buff.keys.map(b => `${label} ${statMap[b]} [${calculateSteal(desc)}]`);
+            let amount = calculateSteal(desc);
+            const buffs = []
+            buff.keys.forEach(b => {
+                buffs.push(`${label} <${statMap[b]}> [${amount}]`);
+                buffs.push(`Raise <${statMap[b]}> [${amount}]`);
+                buffs.push(`Lower foes <${statMap[b]}> [${amount}]`);
+            });
             return buffs
         };
     } else if (buff.type === 'Confuse' || buff.type === 'Paralyze') {
         return `${buff.type} ${calculateTurns(desc, buff.type)}`;
     } else if (buff.type === 'Bot') {
         if (buff.keys) {
-            const buffs = buff.keys.map(b => `Raise ${statMap[b]} ${calculateTurns(desc, '')}`);
+            const buffs = buff.keys.map(b => `Raise <${statMap[b]}> ${calculateTurns(desc, '')}`);
             return buffs;
         }
     } else if (buff.type === 'Buff') {
         if (buff.keys) {
             const amount = desc.includes('Chaos') ? -5 : desc.includes('Surge') ? 5 : calculateBuff(desc);
-            const buffs = buff.keys.map(k => amount > 0 ? `Raise ${statMap[k]} [${amount}]` : `Lower foes ${statMap[k]} [${-amount}]`);
+            const buffs = buff.keys.map(k => amount > 0 ? `Raise <${statMap[k]}> [${amount}]` : `Lower foes <${statMap[k]}> [${-amount}]`);
             return buffs;
         }
     }
