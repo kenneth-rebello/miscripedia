@@ -258,14 +258,15 @@ const App = () => {
     const filteredMiscrits = sortedMiscrits.filter(miscrit => {
         const searchTermLower = searchTerm.toLowerCase();
         const nameMatch = miscrit.names.some(name => name.toLowerCase().includes(searchTermLower));
-        let abilityMatch = true; let ultBuffMatch = true;
+        let abilityMatch = true; let ultBuffMatch = true; let ultTypeMatch = true;
         if (abilityFilters.apply) {
-            const { name, text, ultBuff } = abilityFilters;
+            const { name, text, ultBuff, ultType } = abilityFilters;
             const searchString = text ? text.toLowerCase() : text;
             const textMatch = ability => text ? ability.desc.toLowerCase().includes(searchString) : true;
             const nameMatch = abilityName => name ? abilityName === name : true;
             abilityMatch = miscrit.abilities.some(a => nameMatch(a.name) && textMatch(a));
             ultBuffMatch = ultBuff ? miscrit.ultBuffs.some(ult => ult?.includes(ultBuff)) : true;
+            ultTypeMatch = ultType ? miscrit.ultimates.some(ult => ult.element === ultType) : true;
         }
         const elementMatch = currentElementFilter === 'All' || miscrit.element === currentElementFilter;
         const rarityMatch = currentRarityFilter === 'All' || miscrit.rarity === currentRarityFilter;
@@ -275,7 +276,7 @@ const App = () => {
         });
         const extrasMatch = selectedBuffs.length === 0 || selectedBuffs.some(extra => miscrit.extras.includes(extra));
 
-        return nameMatch && abilityMatch && ultBuffMatch
+        return nameMatch && abilityMatch && ultBuffMatch &&ultTypeMatch
             && elementMatch && rarityMatch && locationMatch && statMatch && extrasMatch;
     });
 
@@ -474,16 +475,16 @@ const App = () => {
                             <div className="flex flex-row items-center justify-end gap-2 m-0 space-x-0 sm:space-x-4 w-[95%]">
                                 <button
                                     onClick={() => toggleAbilityFilter(true)}
-                                    className="bg-teal-800 text-white text-sm px-3 py-1 font-semibold hover:bg-teal-600 transition-colors duration-200"
+                                    className="bg-teal-800 text-white text-sm px-3 py-1 rounded-full font-semibold hover:bg-teal-600 transition-colors duration-200"
                                 >
                                     Filter by Abilities
                                 </button>
-                                <button
+                                {abilityFilters.apply && <button
                                     onClick={resetFilters}
-                                    className="bg-red-800 text-white text-sm px-3 py-1 font-semibold hover:bg-red-700 transition-colors duration-200"
+                                    className="bg-red-800 text-white text-sm px-3 py-1 rounded-full font-semibold hover:bg-red-700 transition-colors duration-200"
                                 >
                                     Reset Filters
-                                </button>
+                                </button>}
                             </div>
                         </>
                     )}

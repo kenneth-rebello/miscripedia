@@ -17,6 +17,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
     const [selectedAp, setSelectedAp] = useState('');
     const [selectedTurns, setSelectedTurns] = useState('');
     const [selectedUltBuff, setSelectedUltBuff] = useState('');
+    const [selectedUltType, setSelectedUltType] = useState('');
     const [statOptions, setStatOptions] = useState([]);
     const [apOptions, setApOptions] = useState([]);
     const [turnsOptions, setTurnsOptions] = useState([]);
@@ -40,7 +41,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             const elements = [];
             abilities.forEach(a => {
                 types.push(a.type);
-                elements.push(a.element);
+                if(a.element !== 'Misc') elements.push(a.element);
             });
             setAvailableTypes([...new Set(types)]);
             setAvailableElements([...new Set(elements)]);
@@ -121,7 +122,8 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             apply: filters.apply,
             name: filters.name,
             text: filters.text,
-            ultBuff: filters.ultBuff
+            ultBuff: filters.ultBuff,
+            ultType: filters.ultType
         });
     }
 
@@ -130,7 +132,8 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             apply: false,
             name: '',
             text: '',
-            ultBuff: ''
+            ultBuff: '',
+            ultType: ''
         });
     }
 
@@ -139,7 +142,8 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             apply: true,
             name: selectedAbility,
             text: abilitySearchTerm,
-            ultBuff: selectedUltBuff
+            ultBuff: selectedUltBuff,
+            ultType: selectedUltType
         });
     };
 
@@ -275,7 +279,30 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                         />
                     </div>
 
-                    <div className="flex flex-col mt-4">
+                    <div className='flex flex-col mt-4'>
+                        <div className="flex items-center justify-between">
+                            <p className="text-gray-300 text-sm mb-1">
+                                Ultimate Type
+                            </p>
+                        </div>
+                        <div className="flex flex-row flex-wrap gap-2 mt-1">
+                            <div>
+                                <select
+                                    id="ultimate-type"
+                                    value={selectedUltType}
+                                    onChange={e => setSelectedUltType(e.target.value)}
+                                    className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option key="all" value="all">All Elements</option>
+                                    {availableElements.map(element => (
+                                        <option key={element} value={element}>{element}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col">
                         <div className="flex items-center justify-between">
                             <p className="text-gray-300 text-sm mb-1">
                                 Ultimate Buffs
@@ -288,7 +315,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                             <select
                                 value={selectedLabel}
                                 onChange={e => setSelectedLabel(e.target.value)}
-                                className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="" disabled>-- Label --</option>
                                 {uniqueLabels.map(label => (
@@ -300,7 +327,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                             <select
                                 value={selectedStat}
                                 onChange={e => setSelectedStat(e.target.value)}
-                                className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="" disabled>-- Stat --</option>
                                 {statOptions.map(stat => (
@@ -312,7 +339,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                             <select
                                 value={selectedAp}
                                 onChange={e => setSelectedAp(e.target.value)}
-                                className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 disabled={apOptions.length === 0}
                             >
                                 <option value="">-- AP --</option>
@@ -325,7 +352,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                             <select
                                 value={selectedTurns}
                                 onChange={e => setSelectedTurns(e.target.value)}
-                                className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex grow-0 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 disabled={turnsOptions.length === 0}
                             >
                                 <option value="">{turnsOptions.length === 0 ? '-- Turns --' : '-- Turns --'}</option>
@@ -340,16 +367,16 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
 
                     <div className='w-full flex justify-between items-center mt-2'>
                         <button
-                            onClick={handleApplyFilter}
-                            className="w-[45%] bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-2 rounded-full transition-colors duration-300"
-                        >
-                            Apply Filters
-                        </button>
-                        <button
                             onClick={handleClear}
                             className="w-[45%] bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-2 rounded-full transition-colors duration-300"
                         >
                             Clear Filters
+                        </button>
+                        <button
+                            onClick={handleApplyFilter}
+                            className="w-[45%] bg-teal-800 hover:bg-teal-600 text-white text-sm font-semibold py-2 px-2 rounded-full transition-colors duration-300"
+                        >
+                            Apply Filters
                         </button>
                     </div>
                 </div>
