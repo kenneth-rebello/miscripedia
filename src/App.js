@@ -57,11 +57,12 @@ const App = () => {
         if(sentinelRef.current) {
             const rect = sentinelRef.current.getBoundingClientRect();
             if(rect) {
-                setShowHeader(rect.y > 0);
+                if(rect.width < 450)
+                    setShowHeader(rect.y > 0);
                 if(forceHeaderRef.current) {
                     const oldY = sentinelPositionRef.current;
                     const newY = rect.y;
-                    if (Math.abs(oldY - newY) > 5)
+                    if (Math.abs(oldY - newY) > 10)
                         setForceHeader(false);
                 }
             }
