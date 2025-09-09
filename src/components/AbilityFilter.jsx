@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
-const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
-
+const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
     const [selectedAbility, setSelectedAbility] = useState(filters.name);
     const [abilitySearchTerm, setAbilitySearchTerm] = useState(filters.text);
     const [abilityOptions, setAbilityOptions] = useState([]);
@@ -13,17 +12,39 @@ const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
     const [availableTypes, setAvailableTypes] = useState([]);
     const [availableElements, setAvailableElements] = useState([]);
 
+    const [selectedLabel, setSelectedLabel] = useState('');
+    const [selectedAp, setSelectedAp] = useState('');
+    const [selectedTurns, setSelectedTurns] = useState('');
+    const [selectedUltBuff, setSelectedUltBuff] = useState('');
+    const [apOptions, setApOptions] = useState([]);
+    const [turnsOptions, setTurnsOptions] = useState([]);
+
+    const uniqueLabels = useMemo(() => {
+        if (ultBuffs?.length) {
+            const labels = new Set();
+            ultBuffs.filter(Boolean).forEach(item => {
+                const label = item.split(' [')[0].split(' (x')[0].split(' +')[0];
+                labels.add(label.trim());
+            });
+            return Array.from(labels).sort();
+        }
+        return [];
+    }, [ultBuffs]);
+
+
     useEffect(() => {
         if (abilities) {
             const types = [];
             const elements = [];
             abilities.forEach(a => {
-                types.push(a.type); elements.push(a.element);
+                types.push(a.type);
+                elements.push(a.element);
             });
             setAvailableTypes([...new Set(types)]);
             setAvailableElements([...new Set(elements)]);
         }
     }, [abilities])
+
 
     useEffect(() => {
         if (abilities) {
@@ -35,11 +56,58 @@ const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
         }
     }, [abilities, ultimateFilter, selectedElement, selectedType])
 
+
+    useEffect(() => {
+        // Reset selections and options when the label changes
+        setSelectedAp('');
+        setSelectedTurns('');
+        if (!selectedLabel) {
+            setApOptions([]);
+            setTurnsOptions([]);
+            return;
+        }
+
+        const filteredItems = ultBuffs.filter(item => item && item.startsWith(selectedLabel));
+        const apValues = new Set();
+        const turnsValues = new Set();
+
+        filteredItems.forEach(item => {
+            const apMatch = item.match(/\[(\d+)\]/);
+            if (apMatch) {
+                apValues.add(apMatch[1]);
+            }
+            const turnsMatch = item.match(/\(x(\d+)\)/);
+            if (turnsMatch) {
+                turnsValues.add(turnsMatch[1]);
+            }
+        });
+
+        const sortedAp = Array.from(apValues).sort((a, b) => a - b);
+        const sortedTurns = Array.from(turnsValues).sort((a, b) => a - b);
+
+        setApOptions(sortedAp);
+        setTurnsOptions(sortedTurns);
+    }, [selectedLabel, ultBuffs]);
+
+    const combinedString = useMemo(() => {
+        if (!selectedLabel) return '';
+        let result = selectedLabel;
+        if (selectedAp) {
+            result += ` [${selectedAp}]`;
+        }
+        if (selectedTurns) {
+            result += ` (x${selectedTurns})`;
+        }
+        return result.trim();
+    }, [selectedLabel, selectedAp, selectedTurns]);
+
+    // Handlers
     const handleCancel = () => {
         onClose({
             apply: filters.apply,
             name: selectedAbility,
-            text: abilitySearchTerm
+            text: abilitySearchTerm,
+            ultBuff: selectedUltBuff
         });
     }
 
@@ -47,7 +115,8 @@ const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
         onClose({
             apply: false,
             name: '',
-            text: ''
+            text: '',
+            ultBuff: ''
         });
     }
 
@@ -55,9 +124,17 @@ const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
         onClose({
             apply: true,
             name: selectedAbility,
-            text: abilitySearchTerm
+            text: abilitySearchTerm,
+            ultBuff: selectedUltBuff
         });
     };
+
+    // Update ability search term when combined string changes
+    useEffect(() => {
+        if (combinedString) {
+            setSelectedUltBuff(combinedString);
+        }
+    }, [combinedString]);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 transition-opacity duration-300">
@@ -70,8 +147,8 @@ const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
                     </svg>
                 </button>
-                <h3 className="text-xl font-bold text-center text-gray-100 mb-4">Search by Abilities</h3>
-                <div className="flex flex-col gap-4">
+                <h3 className="text-lg font-bold text-center text-gray-100 mb-4">Filter Miscrits by abilities</h3>
+                <div className="flex flex-col gap-2">
 
                     <div>
                         <div className="flex w-full items-center justify-between">
@@ -102,10 +179,10 @@ const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
                     </div>
 
                     {showFilters && (<div className="flex flex-col gap-2 bg-slate-700 p-4 pt-1 pb-2 border-2 border-inset border-slate-600">
-                        <p className="text-gray-300 text-sm font-bold">
-                            Filter abilities
+                        <p className="text-gray-300 text-xs mb-1">
+                            Filter ability options
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                        <div className="flex flex-row gap-4 items-center justify-between">
                             <div className={`${selectedType === 'Attack' ? 'w-[45%]' : 'w-full'}`}>
                                 <select
                                     id="ability-type"
@@ -135,8 +212,7 @@ const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
                             </div>)}
                         </div>
 
-
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center justify-center gap-2 space-y-1">
                             <label className="flex items-center space-x-2 cursor-pointer">
                                 <input
                                     type="radio"
@@ -184,18 +260,72 @@ const AbilityFilterDialog = ({ filters, abilities, onClose }) => {
                             className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-                    <button
-                        onClick={handleApplyFilter}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300 mt-2"
-                    >
-                        Apply Filters
-                    </button>
-                    <button
-                        onClick={handleClear}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300 mt-2"
-                    >
-                        Clear Filters
-                    </button>
+
+                    <div className="flex flex-col mt-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-gray-300 text-sm mb-1">
+                                Ultimate Buffs
+                            </p>
+                            {selectedUltBuff && <p className='text-slate-100 text-xs'>
+                                {selectedUltBuff}
+                            </p>}
+                        </div>
+                        <div className="flex flex-row flex-wrap gap-2 mt-1">
+                            <select
+                                value={selectedLabel}
+                                onChange={e => setSelectedLabel(e.target.value)}
+                                className="w-full sm:flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="" disabled>-- Label --</option>
+                                {uniqueLabels.map(label => (
+                                    <option key={label} value={label}>
+                                        {label}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                value={selectedAp}
+                                onChange={e => setSelectedAp(e.target.value)}
+                                className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                disabled={apOptions.length === 0}
+                            >
+                                <option value="">{apOptions.length === 0 ? '-- AP --' : '-- AP --'}</option>
+                                {apOptions.map(ap => (
+                                    <option key={ap} value={ap}>
+                                        {ap}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                value={selectedTurns}
+                                onChange={e => setSelectedTurns(e.target.value)}
+                                className="flex-1 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                disabled={turnsOptions.length === 0}
+                            >
+                                <option value="">{turnsOptions.length === 0 ? '-- Turns --' : '-- Turns --'}</option>
+                                {turnsOptions.map(turns => (
+                                    <option key={turns} value={turns}>
+                                        x{turns}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className='w-full flex justify-between items-center mt-2'>
+                        <button
+                            onClick={handleApplyFilter}
+                            className="w-[45%] bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-2 rounded-full transition-colors duration-300"
+                        >
+                            Apply Filters
+                        </button>
+                        <button
+                            onClick={handleClear}
+                            className="w-[45%] bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-2 rounded-full transition-colors duration-300"
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

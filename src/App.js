@@ -8,8 +8,8 @@ import AbilityFilterDialog from './components/AbilityFilter';
 import miscritsData from './data/miscrits.json';
 import MiscritLogo from './data/MiscritsLogo.png';
 import {
-    statValues, getStatColor, rarityValues, removeDuplicates
-} from './helpers.js';
+    statValues, getStatColor, rarityValues, removeDuplicates, extractBuffs
+} from './helpers/helpers.js';
 
 
 const App = () => {
@@ -32,6 +32,7 @@ const App = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBuffs, setselectedBuffs] = useState([]);
     const [availableBuffs, setAvailableBuffs] = useState([]);
+    const [availableUltBuffs, setAvailableUltBuffs] = useState([]);
     const [showBuffsFilter, toggleBuffsFilter] = useState(false);
     const [availableAbilities, setAvailableAbilities] = useState([]);
     const [abilityFilters, setAbilityFilters] = useState({
@@ -49,11 +50,10 @@ const App = () => {
     useEffect(() => {
         let abilityOptions = [];
         const transformedMiscrits = miscritsData.map(m => {
+            let miscritUltBuffs = [];
             const { id, element, rarity, names, abilities: rawAbilities } = m;
             let extras = [];
             let maxAP = 0;
-
-
             let indexLevelMap = { 0: 1, 1: 1, 2: 4, 3: 7, 4: 10, 5: 13, 6: 16, 7: 19, 8: 22, 9: 25, 10: 28, 11: 30 }
             const abilities = m.ability_order.map((i, idx) => {
                 const ability = rawAbilities.find(a => a.id === i);
@@ -66,23 +66,24 @@ const App = () => {
                 }
 
                 let imgSrcName = (ability.type === 'Attack' ? ability.element : ability.type).toLowerCase();
-                if(imgSrcName === 'buff' && ability.desc.includes('Lower')) imgSrcName = 'debuff';
-                else if(imgSrcName === 'dot' && ability.element) imgSrcName = `${ability.element.toLowerCase()}_poison`
-                else if(imgSrcName === 'hot') imgSrcName = 'heal';
+                if (imgSrcName === 'buff' && ability.desc.includes('Lower')) imgSrcName = 'debuff';
+                else if (imgSrcName === 'dot' && ability.element) imgSrcName = `${ability.element.toLowerCase()}_poison`
+                else if (imgSrcName === 'hot') imgSrcName = 'heal';
                 const imgSrc = `https://worldofmiscrits.com/${imgSrcName}.png`
 
                 const unlockedAt = indexLevelMap[idx];
-                abilityOptions.push({ 
-                    id: ability.id, 
-                    name: ability.name, 
-                    ultimate: unlockedAt > 27 && ap > 29, 
-                    type: ability.type, 
+                abilityOptions.push({
+                    id: ability.id,
+                    name: ability.name,
+                    ultimate: unlockedAt > 27 && ap > 29,
+                    type: ability.type,
                     element: ability.element
                 });
 
                 if (ability.type && ability.type !== 'Attack' && ability.type !== 'Buff') {
                     extras.push(ability.type);
                 }
+
                 if (ability.additional?.length) {
                     ability.additional.forEach(a => {
                         if (a.type && a.type !== 'Attack' && a.type !== 'Buff') {
@@ -99,7 +100,7 @@ const App = () => {
                     additional: ability.additional,
                     type: ability.type,
                     unlockedAt,
-                    imgSrc
+                    imgSrc,
                 };
             }).filter(Boolean).reverse();
 
@@ -107,13 +108,30 @@ const App = () => {
             const locations = Object.keys(m.locations);
             let offset = rarityValues[rarity] > 2 ? maxAP > 35 ? 5 : 2 : 0;
             const ultimates = abilities.filter(a => a.type === 'Attack' && (a.unlockedAt === 30 || a.ap >= (maxAP - offset)))
+            ultimates.forEach(ult => {
+                if (ult.additional?.length) {
+                    ult.additional.forEach(a => {
+                        if (a.type) {
+                            if (a.name)
+                                miscritUltBuffs.push(a.name);
+                            const formattedBuffs = extractBuffs(a, ult.desc);
+                            if (Array.isArray(formattedBuffs)) {
+                                formattedBuffs.map(fb => miscritUltBuffs.push(fb))
+                            } else {
+                                miscritUltBuffs.push(formattedBuffs);
+                            }
+                        }
+                    })
+                }
+            })
 
             return {
                 id, name: m.names[0], element, rarity, names, images,
                 hp: m.hp, spd: m.spd, ea: m.ea, pa: m.pa, ed: m.ed, pd: m.pd,
                 abilities,
                 locations, maxAP, ultimates,
-                extras: [...new Set(extras)]
+                extras: [...new Set(extras)],
+                ultBuffs: miscritUltBuffs
             };
         });
 
@@ -131,8 +149,11 @@ const App = () => {
         const allExtras = new Set(transformedMiscrits.flatMap(m => m.extras));
         setAvailableBuffs(Array.from(allExtras).sort());
 
+        const allUltBuffs = new Set(transformedMiscrits.flatMap(m => m.ultBuffs));
+        setAvailableUltBuffs(Array.from(allUltBuffs).sort());
+
         const allAbilities = removeDuplicates(abilityOptions, 'id');
-        setAvailableAbilities(allAbilities.sort((a,b) => b.name - a.name));
+        setAvailableAbilities(allAbilities.sort((a, b) => b.name - a.name));
 
         // Set loading to false after initial data load
         setIsLoading(false);
@@ -157,6 +178,7 @@ const App = () => {
     const handleAbilityFilterChange = (filters) => {
         setAbilityFilters(filters);
         toggleAbilityFilter(false);
+        setShowFilters(false);
     }
 
     const handleExtraToggle = (extra) => {
@@ -197,12 +219,14 @@ const App = () => {
     const filteredMiscrits = sortedMiscrits.filter(miscrit => {
         const searchTermLower = searchTerm.toLowerCase();
         const nameMatch = miscrit.names.some(name => name.toLowerCase().includes(searchTermLower));
-        let abilityMatch = true;
+        let abilityMatch = true; let ultBuffMatch = true;
         if (abilityFilters.apply) {
-            const { name, text } = abilityFilters;
+            const { name, text, ultBuff } = abilityFilters;
             const searchString = text ? text.toLowerCase() : text;
             const textMatch = ability => text ? ability.desc.toLowerCase().includes(searchString) : true;
-            abilityMatch = miscrit.abilities.some(a => a.name === name && textMatch(a))
+            const nameMatch = abilityName => name ? abilityName === name : true;
+            abilityMatch = miscrit.abilities.some(a => nameMatch(a.name) && textMatch(a));
+            ultBuffMatch = ultBuff ? miscrit.ultBuffs.some(ult => ult?.includes(ultBuff)) : true;
         }
         const elementMatch = currentElementFilter === 'All' || miscrit.element === currentElementFilter;
         const rarityMatch = currentRarityFilter === 'All' || miscrit.rarity === currentRarityFilter;
@@ -212,7 +236,7 @@ const App = () => {
         });
         const extrasMatch = selectedBuffs.length === 0 || selectedBuffs.some(extra => miscrit.extras.includes(extra));
 
-        return nameMatch && abilityMatch
+        return nameMatch && abilityMatch && ultBuffMatch
             && elementMatch && rarityMatch && locationMatch && statMatch && extrasMatch;
     });
 
@@ -234,7 +258,7 @@ const App = () => {
             <header className="sticky-header sticky top-0 z-10 p-4 mb-4">
                 <div className="flex flex-col justify-center items-center gap-2 space-y-4 sm:space-y-0 sm:space-x-8 max-w-7xl mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500">
                     <div className="flex items-center gap-0">
-                        <img src={MiscritLogo} alt="Miscrits" className="h-[4rem]"/>
+                        <img src={MiscritLogo} alt="Miscrits" className="h-[4rem]" />
                         <h1 className="text-3xl md:text-[2rem] font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-lime-200 to-lime-600 drop-shadow-md header-font">
                             -dex
                         </h1>
@@ -397,7 +421,7 @@ const App = () => {
                                     onClick={() => toggleAbilityFilter(true)}
                                     className="bg-teal-800 text-white text-sm px-3 py-1 font-semibold hover:bg-teal-600 transition-colors duration-200"
                                 >
-                                    Explore Abilities
+                                    Filter by Abilities
                                 </button>
                                 <button
                                     onClick={resetFilters}
@@ -430,7 +454,11 @@ const App = () => {
             )}
 
             {showAbilityFilter && (
-                <AbilityFilterDialog filters={abilityFilters} abilities={availableAbilities} onClose={handleAbilityFilterChange} />
+                <AbilityFilterDialog 
+                    filters={abilityFilters} 
+                    abilities={availableAbilities} onClose={handleAbilityFilterChange} 
+                    ultBuffs={availableUltBuffs}
+                />
             )}
         </div>
     );

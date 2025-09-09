@@ -1,3 +1,4 @@
+import { calculateHeal, calculateHot, calculateTurns, calculateBlock, calculateBuff, calculateSteal, extractDot, statMap } from "./extract-buffs";
 
 export const elementColors = {
     'Water': 'sky', 'Nature': 'green', 'Fire': 'red',
@@ -95,3 +96,42 @@ export const extractHitsNumber = (text) => {
     }
 }
 
+export const extractBuffs = (buff, desc) => {
+    if (buff.type === 'Attack')
+        return;
+    if (buff.type === 'Heal') {
+        return `Heal ${calculateHeal(desc)}`;
+    } else if (buff.type === 'Hot') {
+        return `Heal ${calculateHot(desc)}`
+    } else if (buff.type === 'Antiheal') {
+        return `Antiheal ${calculateTurns(desc, 'heal')}`;
+    } else if (buff.type === 'Bleed') {
+        return `Bleed ${calculateTurns(desc, 'Bleed')}`
+    } else if (buff.type === 'Block') {
+        return `Block ${calculateBlock(desc)}`
+    } else if (buff.type === 'Dot' || buff.type === 'Poison') {
+        return extractDot(desc, buff.element || buff.type);
+    } else if (buff.type === 'LifeSteal') {
+        return `${buff.type.replace(/([a-z])([A-Z])/g, '$1 $2')} [${calculateSteal(desc)}]`;
+    } else if (buff.type === 'StatSteal') {
+        if (buff.keys) {
+            let label = buff.type.replace(/([a-z])([A-Z])/g, '$1 $2');
+            const buffs = buff.keys.map(b => `${label} ${statMap[b]} [${calculateSteal(desc)}]`);
+            return buffs
+        };
+    } else if (buff.type === 'Confuse' || buff.type === 'Paralyze') {
+        return `${buff.type} ${calculateTurns(desc, buff.type)}`;
+    } else if (buff.type === 'Bot') {
+        if (buff.keys) {
+            const buffs = buff.keys.map(b => `Raise ${statMap[b]} ${calculateTurns(desc, '')}`);
+            return buffs;
+        }
+    } else if (buff.type === 'Buff') {
+        if (buff.keys) {
+            const amount = desc.includes('Chaos') ? -5 : desc.includes('Surge') ? 5 : calculateBuff(desc);
+            const buffs = buff.keys.map(k => amount > 0 ? `Raise ${statMap[k]} [${amount}]` : `Lower foes ${statMap[k]} [${-amount}]`);
+            return buffs;
+        }
+    }
+    return buff.type;
+}

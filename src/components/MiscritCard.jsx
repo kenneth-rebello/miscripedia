@@ -2,7 +2,7 @@ import React from 'react';
 
 import {
     statValues, getGradientClass, rarityShinyBgColors, rarityTextColors, rarityBorderColors, statIcons, iconBgColors, getStatColor
-} from '../helpers.js';
+} from '../helpers/helpers.js';
 
 const MiscritCard = ({ miscrit, onClick, showEvolved }) => {
     const statLabels = {

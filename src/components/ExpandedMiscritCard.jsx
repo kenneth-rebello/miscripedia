@@ -3,7 +3,7 @@ import '../App.css';
 
 import {
     getGradientClass, rarityShinyBgColors, rarityTextColors, rarityBorderColors
-} from '../helpers.js';
+} from '../helpers/helpers.js';
 
 const ExpandedMiscritCard = ({ miscrit, onClose }) => {
     const abilitiesContainerRef = useRef(null);
