@@ -291,13 +291,15 @@ const App = () => {
         const nameMatch = miscrit.names.some(name => name.toLowerCase().includes(searchTermLower));
         let abilityMatch = true; let ultBuffMatch = true; let ultTypeMatch = true;
         if (abilityFilters.apply) {
-            const { name, text, type, element, ultBuff, ultType, maxLevel } = abilityFilters;
+            const { name, text, type, element, ultBuff, ultType, maxLevel, matchExact } = abilityFilters;
             const searchString = text ? text.toLowerCase() : text;
             const textMatch = ability => text ? ability.desc.toLowerCase().includes(searchString) : true;
             const nameMatch = ability => name ? ability.name === name : true;
             const typeMatch = ability => type ? ability.type === type : true;
             const elementMatch = ability => element ? ability.element === element : true;
-            const abilitiesToCheck = maxLevel ? miscrit.abilities.filter(a => a.unlockedAt <= maxLevel) : miscrit.abilities;
+            const abilitiesToCheck = maxLevel ? 
+                                        matchExact ? miscrit.abilities.filter(a => a.unlockedAt === maxLevel) :
+                                        miscrit.abilities.filter(a => a.unlockedAt <= maxLevel) : miscrit.abilities;
             abilityMatch = abilitiesToCheck.some(a => nameMatch(a) && typeMatch(a) && elementMatch(a) && textMatch(a));
             ultBuffMatch = ultBuff ? miscrit.ultBuffs.some(ult => ult?.includes(ultBuff)) : true;
             ultTypeMatch = ultType ? miscrit.ultimates.some(ult => ultType === 'Elemental' ? ult.element !== 'Physical' : ult.element === ultType) : true;
@@ -567,12 +569,12 @@ const App = () => {
                                 >
                                     Filter by Abilities
                                 </button>
-                                {abilityFilters.apply && <button
+                                <button
                                     onClick={resetFilters}
                                     className="bg-red-800 text-white text-sm px-3 py-1 rounded-full font-semibold hover:bg-red-700 transition-colors duration-200"
                                 >
                                     Reset Filters
-                                </button>}
+                                </button>
                             </div>
                         </>
                     )}

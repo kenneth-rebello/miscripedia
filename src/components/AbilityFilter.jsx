@@ -22,6 +22,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
     const [apOptions, setApOptions] = useState([]);
     const [turnsOptions, setTurnsOptions] = useState([]);
     const [maxLevel, setMaxLevel] = useState(filters.maxLevel || 30);
+    const [exactLevel, toggleExactLevel] = useState(false);
 
     const { showToast } = useToast();
 
@@ -156,10 +157,10 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
     }
 
     const handleApplyFilter = () => {
-        if(maxLevel < 30) {
+        if (maxLevel < 30) {
             const atLeastOne = [selectedAbility, abilitySearchTerm, selectedType, selectedElement, selectedUltBuff, selectedUltType].some(Boolean);
-            if(!atLeastOne) {
-                showToast('Select at least one ability filter when Max Level < 30');
+            if (!atLeastOne) {
+                showToast('Select at least one ability filter when Level < 30');
                 return;
             }
         }
@@ -171,7 +172,8 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             element: selectedElement,
             ultBuff: selectedUltBuff,
             ultType: selectedUltType,
-            maxLevel: maxLevel
+            maxLevel: maxLevel,
+            matchExact: exactLevel
         });
     };
 
@@ -296,10 +298,22 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                         />
                     </div>
 
-                    <div className="mt-1 px-2">
+                    <div className="mt-4">
                         <label htmlFor="max-level" className="flex items-center justify-between text-gray-300">
-                            <span className="text-xs">Max Miscrit Level</span>
-                            <span className="text-white text-sm font-bold">{maxLevel}</span>
+                            <span className="text-sm">Filter by miscrit level</span>
+                            <div className="flex items-center space-x-2">
+                                <span className="text-gray-400 font-semibold text-sm">{`${exactLevel ? '=' : '<='} ${maxLevel}`}</span>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        value=""
+                                        className="sr-only peer"
+                                        checked={exactLevel}
+                                        onChange={e => toggleExactLevel(e.target.checked)}
+                                    />
+                                    <div className="w-11 h-5 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
                         </label>
                         <input
                             id="max-level"
