@@ -9,7 +9,7 @@ import { ToastProvider } from './services/toast.service.js';
 import miscritsData from './data/miscrits.json';
 import MiscritLogo from './data/MiscritsLogo.png';
 import {
-    statValues, getStatColor, rarityValues, removeDuplicates, extractBuffs
+    dayMap, statValues, getStatColor, rarityValues, removeDuplicates, extractBuffs
 } from './helpers/helpers.js';
 
 
@@ -21,6 +21,8 @@ const App = () => {
     const [elements, setElements] = useState(['All']);
     const [rarities, setRarities] = useState(['All']);
     const [locations, setLocations] = useState(['All']);
+    // eslint-disable-next-line
+    const [days, setDays] = useState(Object.values(dayMap));
     const [expandedMiscritId, setExpandedMiscritId] = useState(null);
 
     const [showEvolved, setShowEvolved] = useState(false);
@@ -29,6 +31,7 @@ const App = () => {
     const [currentElementFilter, setCurrentElementFilter] = useState('All');
     const [currentRarityFilter, setCurrentRarityFilter] = useState('All');
     const [currentLocationFilter, setCurrentLocationFilter] = useState('All');
+    const [currentDayFilter, setCurrentDayFilter] = useState('All');
     const [currentSortOrder, setCurrentSortOrder] = useState('id');
     
     const [searchTerm, setSearchTerm] = useState('');
@@ -150,7 +153,23 @@ const App = () => {
             }).filter(Boolean).reverse();
 
             const images = names.map(n => `https://cdn.worldofmiscrits.com/miscrits/${n.split(' ').join('_').toLowerCase()}_back.png`);
-            const locations = Object.keys(m.locations);
+
+            const locations = [];
+            Object.entries(m.locations).forEach(([loc, data]) => {
+                const areas = Object.keys(data);
+                const days = [];
+                Object.values(data).forEach(a => {
+                    a.forEach(day => days.push(dayMap[day]))
+                })
+                locations.push({
+                    location: loc,
+                    areas, days
+                })
+            })
+            if(!locations.length) locations.push({
+                location: 'Shop', days: [], areas: []
+            });
+
             let offset = rarityValues[rarity] > 2 ? maxAP > 35 ? 5 : 2 : 0;
             const ultimates = abilities.filter(a => a.type === 'Attack' && (a.unlockedAt === 30 || a.ap >= (maxAP - offset)))
             ultimates.forEach(ult => {
@@ -172,9 +191,9 @@ const App = () => {
                 id, name: m.names[0], element, rarity, names, images,
                 hp: m.hp, spd: m.spd, ea: m.ea, pa: m.pa, ed: m.ed, pd: m.pd,
                 abilities,
-                locations, maxAP, ultimates,
+                locations, 
                 extras: [...new Set(extras)],
-                ultBuffs: miscritUltBuffs
+                ultBuffs: miscritUltBuffs, maxAP, ultimates,
             };
         });
 
@@ -186,7 +205,7 @@ const App = () => {
         setElements(['All', ...Array.from(allElements)]);
         setRarities(['All', ...Array.from(allRarities)]);
 
-        const allLocations = new Set(transformedMiscrits.flatMap(m => m.locations));
+        const allLocations = new Set(transformedMiscrits.flatMap(m => m.locations || []).map(l => l.location));
         setLocations(['All', ...Array.from(allLocations).sort()]);
 
         const allExtras = new Set(transformedMiscrits.flatMap(m => m.extras));
@@ -246,6 +265,7 @@ const App = () => {
         setCurrentElementFilter('All')
         setCurrentRarityFilter('All')
         setCurrentLocationFilter('All')
+        setCurrentDayFilter('All')
         setCurrentSortOrder('id')
         setSearchTerm('')
         setAbilityFilters({ apply: false });
@@ -284,14 +304,17 @@ const App = () => {
         }
         const elementMatch = currentElementFilter === 'All' || miscrit.element === currentElementFilter;
         const rarityMatch = currentRarityFilter === 'All' || miscrit.rarity === currentRarityFilter;
-        const locationMatch = currentLocationFilter === 'All' || miscrit.locations.includes(currentLocationFilter);
+        const locationMatch = currentLocationFilter === 'All' || miscrit.locations?.some(l => l.location === currentLocationFilter);
+        const dayMatch = currentDayFilter === 'All' ||
+                            (currentDayFilter === 'Everyday' && miscrit.locations?.some(l => l.days?.length === 0)) ||
+                            miscrit.locations?.some(l => l.days?.includes(currentDayFilter));
         const statMatch = Object.keys(statFilters).every(statKey => {
             return statValues[miscrit[statKey]] >= statFilters[statKey];
         });
         const extrasMatch = selectedBuffs.length === 0 || selectedBuffs.some(extra => miscrit.extras.includes(extra));
 
-        return nameMatch && abilityMatch && ultBuffMatch &&ultTypeMatch
-            && elementMatch && rarityMatch && locationMatch && statMatch && extrasMatch;
+        return nameMatch && abilityMatch && ultBuffMatch && ultTypeMatch
+            && elementMatch && rarityMatch && locationMatch && dayMatch && statMatch && extrasMatch;
     });
 
 
@@ -379,6 +402,21 @@ const App = () => {
                                     </select>
                                 </div>
                                 <div className="flex items-center space-x-4 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Days:</span>
+                                    <select
+                                        id="day-select"
+                                        value={currentDayFilter}
+                                        onChange={(e) => setCurrentDayFilter(e.target.value)}
+                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option key={'All'} value={'All'}>All</option>
+                                        {days.map(d => (
+                                            <option key={d} value={d}>{d}</option>
+                                        ))}
+                                        <option key={'Everyday'} value={'Everyday'}>Everyday</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center space-x-4 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Sort by:</span>
                                     <select
                                         id="sort-select"
@@ -450,7 +488,7 @@ const App = () => {
                                             onClick={() => resetStatFilters()}
                                             className="flex items-center text-white space-x-2 bg-gray-700 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
                                                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
                                             </svg>
                                         </button>

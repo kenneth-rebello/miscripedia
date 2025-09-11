@@ -77,7 +77,7 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                         </div>
 
                         {/* Mobile Image Section */}
-                        <div className="md:hidden relative w-full h-[60vh] p-4 flex flex-col items-center justify-center">
+                        <div className="md:hidden relative w-full h-[60vh] pb-10 flex flex-col items-center justify-center">
                             {selectedMiscritIndex === null ? (
                                 <button
                                     onClick={onClose}
@@ -131,6 +131,37 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                         </div>
                     </div>
                 </div>
+
+                {miscrit.locations && miscrit.locations.length > 0 && (
+                    <div className="flex p-2 bg-slate-800 border-b border-gray-600 gap-4 justify-start items-center px-6">
+                        {miscrit.locations.map((loc, index) => (
+                            <span key={index} className="flex items-center text-xs md:text-sm font-medium text-gray-300">
+                                {loc.location}
+                                <div className="relative group ml-1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        className="w-4 h-4 text-gray-400 cursor-pointer"
+                                    >
+                                        <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.434-.233 3.319.837.249.27.47.568.663.876.388.604.215 1.372-.36 1.837a1.442 1.442 0 00-2.104-.326c-.416.331-.76.73-.97 1.161-.06.12-.115.244-.168.37-.076.194-.252.333-.466.333h-.95a.75.75 0 01-.712-.513 11.237 11.237 0 01-1.76-6.522c0-.522.424-.945.945-.945h.946c.522 0 .945.423.945.945v.29c.477-.168.995-.293 1.54-.356.126-.015.25-.03.375-.045zM12 18.75a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                                    </svg>
+                                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-48 p-2 bg-slate-900 border border-slate-700 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                                        <p className="font-semibold mb-1">{loc.location}</p>
+                                        {loc.areas.length > 0 && (
+                                            <p className="text-gray-300">Areas: {loc.areas.join(', ')}</p>
+                                        )}
+                                        {loc.days.length > 0 && (
+                                            <p className="text-gray-300">Days: {loc.days.join(', ')}</p>
+                                        )}
+                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-slate-900 rotate-45 border-l border-t border-slate-700"></div>
+                                    </div>
+                                </div>
+                            </span>
+                        ))}
+                    </div>
+                )}
+
                 {/* Desktop Abilities Section */}
                 <div className="relative h-full flex-grow bg-slate-700 p-4 hidden md:block rounded-b-lg">
                     <div
