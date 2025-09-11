@@ -454,7 +454,7 @@ const App = () => {
                                             </svg>
                                         </button>
                                         {showBuffsFilter && (
-                                            <div className="absolute z-20 w-48 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                            <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                                                 {availableBuffs.map(extra => (
                                                     <div
                                                         key={extra}
@@ -592,6 +592,7 @@ const App = () => {
                             showEvolved={showEvolved}
                             onClick={() => setExpandedMiscritId(miscrit.id)}
                             onBuffClick={buff => setSelectedBuffs([buff])}
+                            selectedBuffs={selectedBuffs}
                         />
                     ))}
                 </div>

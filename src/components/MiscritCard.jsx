@@ -4,7 +4,7 @@ import {
     statValues, getGradientClass, rarityShinyBgColors, rarityTextColors, rarityBorderColors, statIcons, iconBgColors, getStatColor
 } from '../helpers/helpers.js';
 
-const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick }) => {
+const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick, selectedBuffs }) => {
     const statLabels = {
         hp: 'HP', spd: 'SPD', ea: 'EA', pa: 'PA', ed: 'ED', pd: 'PD'
     };
@@ -61,7 +61,7 @@ const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick }) => {
                             {miscrit.extras.map(extra => (
                                 <div
                                     key={extra}
-                                    className="px-2 py-1 bg-gray-700 text-gray-200 text-xs font-semibold rounded-full"
+                                    className={`px-2 py-1 bg-gray-700 text-gray-200 text-xs font-semibold rounded-full ${selectedBuffs.includes(extra) && 'border-2 border-amber-500'}`}
                                     onClick={(e) => handleBuffClick(e, extra)}
                                 >
                                     {extra}
