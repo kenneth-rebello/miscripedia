@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/miscripedia/static/css/main.0b0d1c47.css",
-    "main.js": "/miscripedia/static/js/main.b13fa654.js",
+    "main.js": "/miscripedia/static/js/main.342e9c4b.js",
     "static/media/MiscritsLogo.png": "/miscripedia/static/media/MiscritsLogo.e3d7d706e559d17eb628.png",
     "index.html": "/miscripedia/index.html",
     "main.0b0d1c47.css.map": "/miscripedia/static/css/main.0b0d1c47.css.map",
-    "main.b13fa654.js.map": "/miscripedia/static/js/main.b13fa654.js.map"
+    "main.342e9c4b.js.map": "/miscripedia/static/js/main.342e9c4b.js.map"
   },
   "entrypoints": [
     "static/css/main.0b0d1c47.css",
-    "static/js/main.b13fa654.js"
+    "static/js/main.342e9c4b.js"
   ]
 }
