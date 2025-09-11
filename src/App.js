@@ -18,38 +18,42 @@ const App = () => {
     // State variables
     const [allMiscrits, setAllMiscrits] = useState([]);
 
-    const [elements, setElements] = useState(['All']);
-    const [rarities, setRarities] = useState(['All']);
+    const [elements, setElements] = useState([]);
+    const [selectedElements, setSelectedElements] = useState([]);
+    const [showElementFilter, toggleElementFilter] = useState(false);
+    const [rarities, setRarities] = useState([]);
+    const [selectedRarities, setSelectedRarities] = useState([]);
+    const [showRarityFilter, toggleRarityFilter] = useState(false);
     const [locations, setLocations] = useState(['All']);
     // eslint-disable-next-line
     const [days, setDays] = useState(Object.values(dayMap));
-    const [expandedMiscritId, setExpandedMiscritId] = useState(null);
+    const [availableUltBuffs, setAvailableUltBuffs] = useState([]);
+    const [availableAbilities, setAvailableAbilities] = useState([]);
 
+    const [searchTerm, setSearchTerm] = useState('');
     const [showEvolved, setShowEvolved] = useState(false);
     const [showFilters, setShowFilters] = useState(false); 
 
-    const [currentElementFilter, setCurrentElementFilter] = useState('All');
-    const [currentRarityFilter, setCurrentRarityFilter] = useState('All');
     const [currentLocationFilter, setCurrentLocationFilter] = useState('All');
     const [currentDayFilter, setCurrentDayFilter] = useState('All');
     const [currentSortOrder, setCurrentSortOrder] = useState('id');
-    
-    const [searchTerm, setSearchTerm] = useState('');
+    const [expandedMiscritId, setExpandedMiscritId] = useState(null);
+
     const [selectedBuffs, setSelectedBuffs] = useState([]);
     const [availableBuffs, setAvailableBuffs] = useState([]);
-    const [availableUltBuffs, setAvailableUltBuffs] = useState([]);
     const [showBuffsFilter, toggleBuffsFilter] = useState(false);
-    const [availableAbilities, setAvailableAbilities] = useState([]);
-    const [abilityFilters, setAbilityFilters] = useState({
-        apply: false, name: '', text: '', ultBuff: ''
-    });
-    const [showAbilityFilter, toggleAbilityFilter] = useState(false);
+
     const [showStatFilter, toggleStatFilter] = useState(false);
+    const [currentStatFilters, setCurrentStatFilters] = useState('');
     const [statFilters, setStatFilters] = useState({
         hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
     });
-    const [currentStatFilters, setCurrentStatFilters] = useState('');
-
+    
+    const [showAbilityFilter, toggleAbilityFilter] = useState(false);
+    const [abilityFilters, setAbilityFilters] = useState({
+        apply: false, name: '', text: '', ultBuff: ''
+    });
+    
     
     const [isLoading, setIsLoading] = useState(true);
     const [showHeader, setShowHeader] = useState(true);
@@ -100,7 +104,7 @@ const App = () => {
         const transformedMiscrits = miscritsData.map(m => {
             let miscritUltBuffs = [];
             const { id, element, rarity, names, abilities: rawAbilities } = m;
-            let extras = [];
+            let buffs = [];
             let maxAP = 0;
             let indexLevelMap = { 0: 1, 1: 1, 2: 4, 3: 7, 4: 10, 5: 13, 6: 16, 7: 19, 8: 22, 9: 25, 10: 28, 11: 30 }
             const abilities = m.ability_order.map((i, idx) => {
@@ -129,13 +133,13 @@ const App = () => {
                 });
 
                 if (ability.type && ability.type !== 'Attack' && ability.type !== 'Buff') {
-                    extras.push(ability.type);
+                    buffs.push(ability.type);
                 }
 
                 if (ability.additional?.length) {
                     ability.additional.forEach(a => {
                         if (a.type && a.type !== 'Attack' && a.type !== 'Buff') {
-                            extras.push(a.type);
+                            buffs.push(a.type);
                         }
                     })
                 }
@@ -192,7 +196,7 @@ const App = () => {
                 hp: m.hp, spd: m.spd, ea: m.ea, pa: m.pa, ed: m.ed, pd: m.pd,
                 abilities,
                 locations, 
-                extras: [...new Set(extras)],
+                buffs: [...new Set(buffs)],
                 ultBuffs: miscritUltBuffs, maxAP, ultimates,
             };
         });
@@ -202,14 +206,14 @@ const App = () => {
         // Populate filters
         const allElements = new Set(transformedMiscrits.map(m => m.element));
         const allRarities = new Set(transformedMiscrits.map(m => m.rarity));
-        setElements(['All', ...Array.from(allElements)]);
-        setRarities(['All', ...Array.from(allRarities)]);
+        setElements([...Array.from(allElements), 'Dual']);
+        setRarities(Array.from(allRarities));
 
         const allLocations = new Set(transformedMiscrits.flatMap(m => m.locations || []).map(l => l.location));
         setLocations(['All', ...Array.from(allLocations).sort()]);
 
-        const allExtras = new Set(transformedMiscrits.flatMap(m => m.extras));
-        setAvailableBuffs(Array.from(allExtras).sort());
+        const allBuffs = new Set(transformedMiscrits.flatMap(m => m.buffs));
+        setAvailableBuffs(Array.from(allBuffs).sort());
 
         const allUltBuffs = new Set(transformedMiscrits.flatMap(m => m.ultBuffs));
         setAvailableUltBuffs(Array.from(allUltBuffs).sort());
@@ -250,20 +254,37 @@ const App = () => {
         setShowFilters(false);
     }
 
-    const handleExtraToggle = (extra) => {
-        setSelectedBuffs(prevExtras => {
-            if (prevExtras.includes(extra)) {
-                return prevExtras.filter(item => item !== extra);
-            } else {
-                return [...prevExtras, extra];
-            }
-        });
+    const handleMultiSelect = (value, type) => {
+        if (type === 'rarity')
+            setSelectedRarities(prevRarities => {
+                if (prevRarities.includes(value)) {
+                    return prevRarities.filter(item => item !== value);
+                } else {
+                    return [...prevRarities, value];
+                }
+            })
+        else if (type === 'buff')
+            setSelectedBuffs(prevBuffs => {
+                if (prevBuffs.includes(value)) {
+                    return prevBuffs.filter(item => item !== value);
+                } else {
+                    return [...prevBuffs, value];
+                }
+            });
+        else if (type === 'element') 
+            setSelectedElements(prevElements => {
+                if (prevElements.includes(value)) {
+                    return prevElements.filter(item => item !== value);
+                } else {
+                    return [...prevElements, value];
+                }
+            });
     };
 
 
     const resetFilters = () => {
-        setCurrentElementFilter('All')
-        setCurrentRarityFilter('All')
+        setSelectedElements([])
+        setSelectedRarities([]);
         setCurrentLocationFilter('All')
         setCurrentDayFilter('All')
         setCurrentSortOrder('id')
@@ -304,8 +325,10 @@ const App = () => {
             ultBuffMatch = ultBuff ? miscrit.ultBuffs.some(ult => ult?.includes(ultBuff)) : true;
             ultTypeMatch = ultType ? miscrit.ultimates.some(ult => ultType === 'Elemental' ? ult.element !== 'Physical' : ult.element === ultType) : true;
         }
-        const elementMatch = currentElementFilter === 'All' || miscrit.element === currentElementFilter;
-        const rarityMatch = currentRarityFilter === 'All' || miscrit.rarity === currentRarityFilter;
+        const miscritElements = miscrit.element.split(/(?=[A-Z])/).filter(Boolean);
+        let elementMatch = selectedElements.length === 0 || miscritElements.some(ele => selectedElements.includes(ele)); 
+        if(selectedElements.includes('Dual')) elementMatch = miscritElements.length === 2;
+        const rarityMatch = selectedRarities.length === 0 || selectedRarities.includes(miscrit.rarity);
         const locationMatch = currentLocationFilter === 'All' || miscrit.locations?.some(l => l.location === currentLocationFilter);
         const dayMatch = currentDayFilter === 'All' ||
                             (currentDayFilter === 'Everyday' && miscrit.locations?.some(l => l.days?.length === 0)) ||
@@ -313,10 +336,10 @@ const App = () => {
         const statMatch = Object.keys(statFilters).every(statKey => {
             return statValues[miscrit[statKey]] >= statFilters[statKey];
         });
-        const extrasMatch = selectedBuffs.length === 0 || selectedBuffs.some(extra => miscrit.extras.includes(extra));
+        const buffsMatch = selectedBuffs.length === 0 || selectedBuffs.some(buff => miscrit.buffs.includes(buff));
 
         return nameMatch && abilityMatch && ultBuffMatch && ultTypeMatch
-            && elementMatch && rarityMatch && locationMatch && dayMatch && statMatch && extrasMatch;
+            && elementMatch && rarityMatch && locationMatch && dayMatch && statMatch && buffsMatch;
     });
 
 
@@ -364,32 +387,102 @@ const App = () => {
                     {showFilters && (
                         <>
                             <div className="flex flex-col sm:flex-row justify-between items-start flex-wrap gap-y-4 m-0 w-full sm:max-w-7xl mx-auto rounded-xl p-2 transition-all duration-500 ease-in-out">
-                                <div className="flex items-center space-x-4 basis-1/4">
-                                    <span className="text-gray-400 font-semibold text-sm">Elements:</span>
-                                    <select
-                                        id="element-select"
-                                        value={currentElementFilter}
-                                        onChange={(e) => setCurrentElementFilter(e.target.value)}
-                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    >
-                                        {elements.map(el => (
-                                            <option key={el} value={el}>{el}</option>
-                                        ))}
-                                    </select>
+                                
+                                <div className="relative flex flex-row items-center space-x-2 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Element:</span>
+                                    <div className="relative flex space-x-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleElementFilter(!showElementFilter)}
+                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <span className="truncate">
+                                                {selectedElements.length > 0 ? selectedElements.join(', ') : ''}
+                                            </span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
+                                                <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                            </svg>
+                                        </button>
+                                        {selectedElements.length && <button
+                                            onClick={() => setSelectedElements([])}
+                                            className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
+                                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                                            </svg>
+                                        </button>}
+                                        {showElementFilter && (
+                                            <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                {elements.map(element => (
+                                                    <div
+                                                        key={element}
+                                                        onClick={() => handleMultiSelect(element, 'element')}
+                                                        className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            readOnly
+                                                            checked={selectedElements.includes(element)}
+                                                            className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
+                                                        />
+                                                        <img
+                                                            src={`https://worldofmiscrits.com/${(element==='Dual' ? 'WaterEarth' : element).toLowerCase()}.png`}
+                                                            alt={`${element}`}
+                                                            className="w-5 h-5 rounded-full"
+                                                        />
+                                                        <span className="text-gray-200 text-sm">{element}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="flex items-center space-x-4 basis-1/4">
-                                    <span className="text-gray-400 font-semibold text-sm">Rarities:</span>
-                                    <select
-                                        id="rarity-select"
-                                        value={currentRarityFilter}
-                                        onChange={(e) => setCurrentRarityFilter(e.target.value)}
-                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    >
-                                        {rarities.map(r => (
-                                            <option key={r} value={r}>{r}</option>
-                                        ))}
-                                    </select>
+                                
+                                <div className="relative flex flex-row items-center space-x-2 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Rarity:</span>
+                                    <div className="relative flex space-x-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleRarityFilter(!showRarityFilter)}
+                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <span className="truncate">
+                                                {selectedRarities.length > 0 ? selectedRarities.join(', ') : ''}
+                                            </span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
+                                                <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                            </svg>
+                                        </button>
+                                        {selectedRarities.length && <button
+                                            onClick={() => setSelectedRarities([])}
+                                            className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
+                                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                                            </svg>
+                                        </button>}
+                                        {showRarityFilter && (
+                                            <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                {rarities.map(rarity => (
+                                                    <div
+                                                        key={rarity}
+                                                        onClick={() => handleMultiSelect(rarity, 'rarity')}
+                                                        className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            readOnly
+                                                            checked={selectedRarities.includes(rarity)}
+                                                            className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
+                                                        />
+                                                        <span className="text-gray-200 text-sm">{rarity}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
+                                
                                 <div className="flex items-center space-x-4 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Locations:</span>
                                     <select
@@ -445,29 +538,29 @@ const App = () => {
                                                 <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
                                             </svg>
                                         </button>
-                                        <button
+                                        {selectedBuffs.length && <button
                                             onClick={() => setSelectedBuffs([])}
-                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                            className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
                                                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
                                             </svg>
-                                        </button>
+                                        </button>}
                                         {showBuffsFilter && (
                                             <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                                {availableBuffs.map(extra => (
+                                                {availableBuffs.map(buff => (
                                                     <div
-                                                        key={extra}
-                                                        onClick={() => handleExtraToggle(extra)}
+                                                        key={buff}
+                                                        onClick={() => handleMultiSelect(buff, 'buff')}
                                                         className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
                                                     >
                                                         <input
                                                             type="checkbox"
                                                             readOnly
-                                                            checked={selectedBuffs.includes(extra)}
+                                                            checked={selectedBuffs.includes(buff)}
                                                             className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
                                                         />
-                                                        <span className="text-gray-200 text-sm">{extra}</span>
+                                                        <span className="text-gray-200 text-sm">{buff}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -486,14 +579,14 @@ const App = () => {
                                             </span>
                                             <svg className={`w-4 h-4 transition-transform duration-200 ${showStatFilter ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                         </button>
-                                        <button
+                                        {currentStatFilters && <button
                                             onClick={() => resetStatFilters()}
-                                            className="flex items-center text-white space-x-2 bg-gray-700 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="flex items-center text-white space-x-2 bg-red-500 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
                                                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
                                             </svg>
-                                        </button>
+                                        </button>}
                                     </div>
                                     {showStatFilter && (
                                         <div className="absolute top-full mt-2 w-64 p-4 rounded-xl shadow-lg bg-gray-800 z-20 transition-opacity duration-300">

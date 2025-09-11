@@ -56,15 +56,15 @@ const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick, selectedBuffs
                         <h2 className={`text-xl sm:text-3xl font-bold card-font`}>{miscrit.name}</h2>
                     }
 
-                    {miscrit.extras.length > 0 && (
+                    {miscrit.buffs.length > 0 && (
                         <div className="flex flex-wrap gap-2 justify-center m-2">
-                            {miscrit.extras.map(extra => (
+                            {miscrit.buffs.map(buff => (
                                 <div
-                                    key={extra}
-                                    className={`px-2 py-1 bg-gray-700 text-gray-200 text-xs font-semibold rounded-full ${selectedBuffs.includes(extra) && 'border-2 border-amber-500'}`}
-                                    onClick={(e) => handleBuffClick(e, extra)}
+                                    key={buff}
+                                    className={`px-2 py-1 bg-gray-700 text-gray-200 text-xs font-semibold rounded-full ${selectedBuffs.includes(buff) && 'border-2 border-amber-500'}`}
+                                    onClick={(e) => handleBuffClick(e, buff)}
                                 >
-                                    {extra}
+                                    {buff}
                                 </div>
                             ))}
                         </div>
@@ -72,7 +72,7 @@ const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick, selectedBuffs
 
                     <div className="flip-container">
                         <div className="flip-inner-container">
-                            <div className={`flip-child ${miscrit.extras.length <= 0 && 'mt-9'} flex justify-center items-center`}>
+                            <div className={`flip-child ${miscrit.buffs.length <= 0 && 'mt-9'} flex justify-center items-center`}>
                                 <div className="w-full h-[75%] bg-slate-300 rounded-lg p-2 grid grid-cols-2 gap-x-4 gap-y-2 m-auto pt-2">
                                     {stats.map(stat => (
                                         <div key={stat.label} className="flex items-center space-x-1">
@@ -94,7 +94,7 @@ const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick, selectedBuffs
                                 </div>
                             </div>
                             {miscrit.ultimates.length > 0 && (
-                                <div className={`flip-child flip-back flex flex-col justify-center gap-2 w-full ${miscrit.extras.length <= 0 && 'mt-9'}`}>
+                                <div className={`flip-child flip-back flex flex-col justify-center gap-2 w-full ${miscrit.buffs.length <= 0 && 'mt-9'}`}>
                                     {miscrit.ultimates.map(ult => (
                                         <div key={ult.name} className="ability-desktop min-w-[250px] p-2 bg-gray-800 rounded-lg shadow-lg flex-shrink-0">
                                             <div className='flex items-center space-x-2'>
