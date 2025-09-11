@@ -4,14 +4,13 @@ import {
     statValues, getGradientClass, rarityShinyBgColors, rarityTextColors, rarityBorderColors, statIcons, iconBgColors, getStatColor
 } from '../helpers/helpers.js';
 
-const MiscritCard = ({ miscrit, onClick, showEvolved }) => {
+const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick }) => {
     const statLabels = {
         hp: 'HP', spd: 'SPD', ea: 'EA', pa: 'PA', ed: 'ED', pd: 'PD'
     };
     const statWidths = {
         1: 'w-[20%]', 2: 'w-[40%]', 3: 'w-[60%]', 4: 'w-[80%]', 5: 'w-[100%]'
     }
-
 
     const stats = Object.keys(statLabels).map(key => ({
         label: statLabels[key],
@@ -22,6 +21,11 @@ const MiscritCard = ({ miscrit, onClick, showEvolved }) => {
     }));
 
     const sheenClass = miscrit.rarity === 'Exotic' || miscrit.rarity === 'Legendary' ? 'exotic-sheen' : 'common-sheen';
+
+    const handleBuffClick = (e, buff) => {
+        e.stopPropagation();
+        onBuffClick(buff);
+    }
 
     return (
         <div
@@ -58,6 +62,7 @@ const MiscritCard = ({ miscrit, onClick, showEvolved }) => {
                                 <div
                                     key={extra}
                                     className="px-2 py-1 bg-gray-700 text-gray-200 text-xs font-semibold rounded-full"
+                                    onClick={(e) => handleBuffClick(e, extra)}
                                 >
                                     {extra}
                                 </div>

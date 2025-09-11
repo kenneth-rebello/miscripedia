@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useToast } from '../services/toast.service.js';
 
 const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
     const [selectedAbility, setSelectedAbility] = useState(filters.name);
     const [abilitySearchTerm, setAbilitySearchTerm] = useState(filters.text);
     const [abilityOptions, setAbilityOptions] = useState([]);
 
-    const [showFilters, toggleFilters] = useState(false);
-    const [ultimateFilter, setUltimateFilter] = useState('');
-    const [selectedType, setSelectedType] = useState('all');
-    const [selectedElement, setSelectedElement] = useState('all');
+    const [ultimateFilter, setUltimateFilter] = useState('all');
+    const [selectedType, setSelectedType] = useState('');
+    const [selectedElement, setSelectedElement] = useState('');
     const [availableTypes, setAvailableTypes] = useState([]);
     const [availableElements, setAvailableElements] = useState([]);
 
@@ -21,6 +21,9 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
     const [statOptions, setStatOptions] = useState([]);
     const [apOptions, setApOptions] = useState([]);
     const [turnsOptions, setTurnsOptions] = useState([]);
+    const [maxLevel, setMaxLevel] = useState(filters.maxLevel || 30);
+
+    const { showToast } = useToast();
 
     const uniqueLabels = useMemo(() => {
         if (ultBuffs?.length) {
@@ -34,6 +37,17 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
         return [];
     }, [ultBuffs]);
 
+    useEffect(() => {
+        const corrections = {
+            1: 1, 2: 1, 3: 1, 4: 4, 5: 4, 6: 4, 7: 7, 8: 7, 9: 7, 10: 10, 11: 10, 12: 10, 13: 13, 14: 13, 15: 13,
+            16: 16, 17: 16, 18: 16, 19: 19, 20: 19, 21: 19, 22: 22, 23: 22, 24: 22, 25: 25, 26: 25, 27: 25, 28: 28, 29: 28, 30: 30
+        }
+        const valid = [...new Set(Object.values(corrections))];
+        if (!valid.includes(maxLevel)) {
+            setMaxLevel(corrections[maxLevel])
+        }
+    }, [maxLevel])
+
 
     useEffect(() => {
         if (abilities) {
@@ -41,7 +55,7 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             const elements = [];
             abilities.forEach(a => {
                 types.push(a.type);
-                if(a.element !== 'Misc') elements.push(a.element);
+                if (a.element !== 'Misc') elements.push(a.element);
             });
             setAvailableTypes([...new Set(types)]);
             setAvailableElements([...new Set(elements)]);
@@ -52,9 +66,10 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
     useEffect(() => {
         if (abilities) {
             setSelectedAbility('')
-            let opts = ultimateFilter === 'all' ? abilities : abilities.filter(a => a.ultimate === (ultimateFilter === 'ultimates'));
-            if (selectedElement !== 'all') opts = opts.filter(o => o.element === selectedElement)
-            if (selectedType !== 'all') opts = opts.filter(o => o.type === selectedType)
+            let opts = abilities.filter(a => a.name !== a.type);
+            if (ultimateFilter !== 'all') opts = opts.filter(a => a.ultimate === (ultimateFilter === 'ultimates'));
+            if (selectedElement) opts = opts.filter(o => o.element === selectedElement)
+            if (selectedType) opts = opts.filter(o => o.type === selectedType)
             setAbilityOptions(opts);
         }
     }, [abilities, ultimateFilter, selectedElement, selectedType])
@@ -122,28 +137,41 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
             apply: filters.apply,
             name: filters.name,
             text: filters.text,
+            type: filters.type,
+            element: filters.element,
             ultBuff: filters.ultBuff,
-            ultType: filters.ultType
+            ultType: filters.ultType,
+            maxLevel: filters.maxLevel
         });
     }
 
     const handleClear = () => {
-        onClose({
-            apply: false,
-            name: '',
-            text: '',
-            ultBuff: '',
-            ultType: ''
-        });
+        setSelectedAbility('');
+        setAbilitySearchTerm('');
+        setSelectedType('');
+        setSelectedElement('');
+        setSelectedUltBuff('');
+        setSelectedUltType('');
+        setMaxLevel(30);
     }
 
     const handleApplyFilter = () => {
+        if(maxLevel < 30) {
+            const atLeastOne = [selectedAbility, abilitySearchTerm, selectedType, selectedElement, selectedUltBuff, selectedUltType].some(Boolean);
+            if(!atLeastOne) {
+                showToast('Select at least one ability filter when Max Level < 30');
+                return;
+            }
+        }
         onClose({
             apply: true,
             name: selectedAbility,
             text: abilitySearchTerm,
+            type: selectedType,
+            element: selectedElement,
             ultBuff: selectedUltBuff,
-            ultType: selectedUltType
+            ultType: selectedUltType,
+            maxLevel: maxLevel
         });
     };
 
@@ -178,94 +206,83 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                                 id="ability-name"
                                 value={selectedAbility}
                                 onChange={e => setSelectedAbility(e.target.value)}
-                                className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="all">All Abilities</option>
                                 {abilityOptions.map(ability => (
                                     <option key={ability.name} value={ability.name}>{ability.name}</option>
                                 ))}
                             </select>
-                            <button
-                                onClick={() => toggleFilters(!showFilters)}
-                                className="mt-2 sm:mt-0 text-gray-200 text-sm px-4 py-2 rounded-full font-semibold border-2 border-gray-700 hover:bg-gray-700 transition-colors duration-200"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-funnel" viewBox="0 0 16 16">
-                                    <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z" />
-                                </svg>
-                            </button>
                         </div>
                     </div>
 
-                    {showFilters && (<div className="flex flex-col gap-2 bg-slate-700 p-4 pt-1 pb-2 border-2 border-inset border-slate-600">
-                        <p className="text-gray-300 text-xs mb-1">
-                            Filter ability options
-                        </p>
-                        <div className="flex flex-row gap-4 items-center justify-between">
-                            <div className={`${selectedType === 'Attack' ? 'w-[45%]' : 'w-full'}`}>
-                                <select
-                                    id="ability-type"
-                                    value={selectedType}
-                                    onChange={e => setSelectedType(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option key="all" value="all">All Types</option>
-                                    {availableTypes.map(type => (
-                                        <option key={type} value={type}>{type}</option>
-                                    ))}
-                                </select>
-                            </div>
+                    <div className="flex items-center justify-start space-x-4 space-y-1 px-4">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="filter-options"
+                                value="all"
+                                checked={ultimateFilter === 'all'}
+                                onChange={e => setUltimateFilter(e.target.value)}
+                                className="form-radio bg-gray-700 checked:border-indigo-500 rounded-full"
+                            />
+                            <span className="text-white text-xs">All</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="filter-options"
+                                value="ultimates"
+                                checked={ultimateFilter === 'ultimates'}
+                                onChange={e => setUltimateFilter(e.target.value)}
+                                className="form-radio bg-gray-700 checked:border-indigo-500 rounded-full"
+                            />
+                            <span className="text-white text-xs">Only Ultimates</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="filter-options"
+                                value="no-ultimates"
+                                checked={ultimateFilter === 'no-ultimates'}
+                                onChange={e => setUltimateFilter(e.target.value)}
+                                className="form-radio bg-gray-700 checked:border-indigo-500 rounded-full"
+                            />
+                            <span className="text-white text-xs">No Ultimates</span>
+                        </label>
+                    </div>
 
-                            {selectedType === 'Attack' && (<div>
-                                <select
-                                    id="ability-element"
-                                    value={selectedElement}
-                                    onChange={e => setSelectedElement(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option key="all" value="all">All Elements</option>
-                                    {availableElements.map(element => (
-                                        <option key={element} value={element}>{element}</option>
-                                    ))}
-                                </select>
-                            </div>)}
+                    <div className="flex flex-row gap-4 items-center justify-between">
+                        <div className={`${selectedType === 'Attack' ? 'w-[45%]' : 'w-full'}`}>
+                            <label htmlFor="ability-type" className="text-gray-300 text-xs mb-1">Ability Type</label>
+                            <select
+                                id="ability-type"
+                                value={selectedType}
+                                onChange={e => setSelectedType(e.target.value)}
+                                className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option key="" value="all">All Types</option>
+                                {availableTypes.map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
                         </div>
 
-                        <div className="flex items-center justify-center gap-2 space-y-1">
-                            <label className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="filter-options"
-                                    value="all"
-                                    checked={ultimateFilter === 'all'}
-                                    onChange={e => setUltimateFilter(e.target.value)}
-                                    className="form-radio bg-gray-700 checked:border-indigo-500 rounded-full"
-                                />
-                                <span className="text-white text-xs">All</span>
-                            </label>
-                            <label className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="filter-options"
-                                    value="ultimates"
-                                    checked={ultimateFilter === 'ultimates'}
-                                    onChange={e => setUltimateFilter(e.target.value)}
-                                    className="form-radio bg-gray-700 checked:border-indigo-500 rounded-full"
-                                />
-                                <span className="text-white text-xs">Only Ultimates</span>
-                            </label>
-                            <label className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="filter-options"
-                                    value="no-ultimates"
-                                    checked={ultimateFilter === 'no-ultimates'}
-                                    onChange={e => setUltimateFilter(e.target.value)}
-                                    className="form-radio bg-gray-700 checked:border-indigo-500 rounded-full"
-                                />
-                                <span className="text-white text-xs">No Ultimates</span>
-                            </label>
-                        </div>
-                    </div>)}
+                        {selectedType === 'Attack' && (<div>
+                            <label htmlFor="ability-element" className="text-gray-300 text-xs mb-1">Ability Element</label>
+                            <select
+                                id="ability-element"
+                                value={selectedElement}
+                                onChange={e => setSelectedElement(e.target.value)}
+                                className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option key="" value="all">All Elements</option>
+                                {availableElements.map(element => (
+                                    <option key={element} value={element}>{element}</option>
+                                ))}
+                            </select>
+                        </div>)}
+                    </div>
 
                     <div>
                         <label htmlFor="description-input" className="text-gray-300 text-sm mb-1">Ability Description</label>
@@ -275,106 +292,123 @@ const AbilityFilterDialog = ({ filters, abilities, ultBuffs, onClose }) => {
                             placeholder="Search by description..."
                             value={abilitySearchTerm}
                             onChange={e => setAbilitySearchTerm(e.target.value)}
-                            className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
 
-                    <div className='flex flex-col mt-4'>
-                        <div className="flex items-center justify-between">
-                            <p className="text-gray-300 text-sm mb-1">
-                                Ultimate Type
-                            </p>
+                    <div className="mt-1 px-2">
+                        <label htmlFor="max-level" className="flex items-center justify-between text-gray-300">
+                            <span className="text-xs">Max Miscrit Level</span>
+                            <span className="text-white text-sm font-bold">{maxLevel}</span>
+                        </label>
+                        <input
+                            id="max-level"
+                            type="range"
+                            min="1"
+                            max="30"
+                            value={maxLevel}
+                            onChange={e => setMaxLevel(parseInt(e.target.value))}
+                            className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4"
+                        />
+                    </div>
+
+                    {maxLevel === 30 && <>
+                        <div className='flex flex-col mt-4'>
+                            <div className="flex items-center justify-between">
+                                <p className="text-gray-300 text-sm mb-1">
+                                    Ultimate Type
+                                </p>
+                            </div>
+                            <div className="flex flex-row flex-wrap gap-2 mt-1">
+                                <div>
+                                    <select
+                                        id="ultimate-type"
+                                        value={selectedUltType}
+                                        onChange={e => setSelectedUltType(e.target.value)}
+                                        className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option key="all" value="all">All</option>
+                                        {['Elemental', ...availableElements].map(element => (
+                                            <option key={element} value={element}>{element}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex flex-row flex-wrap gap-2 mt-1">
-                            <div>
+
+                        <div className="flex flex-col">
+                            <div className="flex items-center justify-between">
+                                <p className="text-gray-300 text-sm mb-1">
+                                    Ultimate Buffs
+                                </p>
+                                {selectedUltBuff && <p className='text-slate-100 text-xs'>
+                                    {selectedUltBuff.replace(/<|>/g, '')}
+                                </p>}
+                            </div>
+                            <div className="flex flex-row flex-wrap gap-2 mt-1">
                                 <select
-                                    id="ultimate-type"
-                                    value={selectedUltType}
-                                    onChange={e => setSelectedUltType(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    value={selectedLabel}
+                                    onChange={e => setSelectedLabel(e.target.value)}
+                                    className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option key="all" value="all">All Elements</option>
-                                    {availableElements.map(element => (
-                                        <option key={element} value={element}>{element}</option>
+                                    <option value="" disabled>-- Label --</option>
+                                    {uniqueLabels.map(label => (
+                                        <option key={label} value={label}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={selectedStat}
+                                    onChange={e => setSelectedStat(e.target.value)}
+                                    className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="" disabled>-- Stat --</option>
+                                    {statOptions.map(stat => (
+                                        <option key={stat} value={stat}>
+                                            {stat}
+                                        </option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={selectedAp}
+                                    onChange={e => setSelectedAp(e.target.value)}
+                                    className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    disabled={apOptions.length === 0}
+                                >
+                                    <option value="">-- AP --</option>
+                                    {apOptions.map(ap => (
+                                        <option key={ap} value={ap}>
+                                            {ap}
+                                        </option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={selectedTurns}
+                                    onChange={e => setSelectedTurns(e.target.value)}
+                                    className="flex grow-0 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    disabled={turnsOptions.length === 0}
+                                >
+                                    <option value="">{turnsOptions.length === 0 ? '-- Turns --' : '-- Turns --'}</option>
+                                    {turnsOptions.map(turns => (
+                                        <option key={turns} value={turns}>
+                                            x{turns}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="flex flex-col">
-                        <div className="flex items-center justify-between">
-                            <p className="text-gray-300 text-sm mb-1">
-                                Ultimate Buffs
-                            </p>
-                            {selectedUltBuff && <p className='text-slate-100 text-xs'>
-                                {selectedUltBuff.replace(/<|>/g, '')}
-                            </p>}
-                        </div>
-                        <div className="flex flex-row flex-wrap gap-2 mt-1">
-                            <select
-                                value={selectedLabel}
-                                onChange={e => setSelectedLabel(e.target.value)}
-                                className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="" disabled>-- Label --</option>
-                                {uniqueLabels.map(label => (
-                                    <option key={label} value={label}>
-                                        {label}
-                                    </option>
-                                ))}
-                            </select>
-                            <select
-                                value={selectedStat}
-                                onChange={e => setSelectedStat(e.target.value)}
-                                className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="" disabled>-- Stat --</option>
-                                {statOptions.map(stat => (
-                                    <option key={stat} value={stat}>
-                                        {stat}
-                                    </option>
-                                ))}
-                            </select>
-                            <select
-                                value={selectedAp}
-                                onChange={e => setSelectedAp(e.target.value)}
-                                className="flex grow p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                disabled={apOptions.length === 0}
-                            >
-                                <option value="">-- AP --</option>
-                                {apOptions.map(ap => (
-                                    <option key={ap} value={ap}>
-                                        {ap}
-                                    </option>
-                                ))}
-                            </select>
-                            <select
-                                value={selectedTurns}
-                                onChange={e => setSelectedTurns(e.target.value)}
-                                className="flex grow-0 p-2 rounded-full border border-gray-700 bg-gray-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                disabled={turnsOptions.length === 0}
-                            >
-                                <option value="">{turnsOptions.length === 0 ? '-- Turns --' : '-- Turns --'}</option>
-                                {turnsOptions.map(turns => (
-                                    <option key={turns} value={turns}>
-                                        x{turns}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
+                    </>}
                     <div className='w-full flex justify-between items-center mt-2'>
                         <button
                             onClick={handleClear}
-                            className="w-[45%] bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-2 rounded-full transition-colors duration-300"
+                            className="w-[45%] bg-red-600 hover:bg-red-700 text-white text-[0.85rem] font-semibold py-1 px-2 rounded-full transition-colors duration-300"
                         >
                             Clear Filters
                         </button>
                         <button
                             onClick={handleApplyFilter}
-                            className="w-[45%] bg-teal-800 hover:bg-teal-600 text-white text-sm font-semibold py-2 px-2 rounded-full transition-colors duration-300"
+                            className="w-[45%] bg-teal-800 hover:bg-teal-600 text-white text-[0.85rem] font-semibold py-1 px-2 rounded-full transition-colors duration-300"
                         >
                             Apply Filters
                         </button>

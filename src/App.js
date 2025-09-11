@@ -4,6 +4,7 @@ import './App.css';
 import MiscritCard from './components/MiscritCard';
 import ExpandedMiscritCard from './components/ExpandedMiscritCard';
 import AbilityFilterDialog from './components/AbilityFilter';
+import { ToastProvider } from './services/toast.service.js';
 
 import miscritsData from './data/miscrits.json';
 import MiscritLogo from './data/MiscritsLogo.png';
@@ -31,7 +32,7 @@ const App = () => {
     const [currentSortOrder, setCurrentSortOrder] = useState('id');
     
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedBuffs, setselectedBuffs] = useState([]);
+    const [selectedBuffs, setSelectedBuffs] = useState([]);
     const [availableBuffs, setAvailableBuffs] = useState([]);
     const [availableUltBuffs, setAvailableUltBuffs] = useState([]);
     const [showBuffsFilter, toggleBuffsFilter] = useState(false);
@@ -44,6 +45,7 @@ const App = () => {
     const [statFilters, setStatFilters] = useState({
         hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
     });
+    const [currentStatFilters, setCurrentStatFilters] = useState('');
 
     
     const [isLoading, setIsLoading] = useState(true);
@@ -84,6 +86,10 @@ const App = () => {
         // eslint-disable-next-line
     }, []);
 
+    
+    useEffect(() => {
+        setCurrentStatFilters(Object.entries(statFilters).filter(([k,v]) => v > 1).map(([k,v]) => `${k}: ${v}`).join(', '));
+    }, [statFilters])
 
     // Data fetching and transformation logic
     useEffect(() => {
@@ -97,6 +103,7 @@ const App = () => {
             const abilities = m.ability_order.map((i, idx) => {
                 const ability = rawAbilities.find(a => a.id === i);
                 if (!ability) return null;
+                const unlockedAt = indexLevelMap[idx];
 
                 const numOfTurns = (ability?.times || 1) + (ability?.enchant?.times || 0);
                 const ap = (ability.ap + (ability?.enchant?.ap || 0)) * numOfTurns;
@@ -110,7 +117,6 @@ const App = () => {
                 else if (imgSrcName === 'hot') imgSrcName = 'heal';
                 const imgSrc = `https://worldofmiscrits.com/${imgSrcName}.png`
 
-                const unlockedAt = indexLevelMap[idx];
                 abilityOptions.push({
                     id: ability.id,
                     name: ability.name,
@@ -151,8 +157,6 @@ const App = () => {
                 if (ult.additional?.length) {
                     ult.additional.forEach(a => {
                         if (a.type) {
-                            if (a.name)
-                                miscritUltBuffs.push(a.name);
                             const formattedBuffs = extractBuffs(a, ult.desc);
                             if (Array.isArray(formattedBuffs)) {
                                 formattedBuffs.map(fb => miscritUltBuffs.push(fb))
@@ -198,7 +202,7 @@ const App = () => {
         setIsLoading(false);
     }, []);
 
-    // Function to handle the Evolved toggle
+
     const handleToggle = (e) => {
         setShowEvolved(e.target.checked);
         setIsLoading(true);
@@ -206,6 +210,13 @@ const App = () => {
             setIsLoading(false);
         }, 2000);
     };
+
+    const resetStatFilters = () => {
+        setStatFilters({
+            hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
+        })
+        toggleStatFilter(false);
+    }
 
     const handleStatFilterChange = (stat, value) => {
         setStatFilters(prevFilters => ({
@@ -221,7 +232,7 @@ const App = () => {
     }
 
     const handleExtraToggle = (extra) => {
-        setselectedBuffs(prevExtras => {
+        setSelectedBuffs(prevExtras => {
             if (prevExtras.includes(extra)) {
                 return prevExtras.filter(item => item !== extra);
             } else {
@@ -238,7 +249,7 @@ const App = () => {
         setCurrentSortOrder('id')
         setSearchTerm('')
         setAbilityFilters({ apply: false });
-        setselectedBuffs([])
+        setSelectedBuffs([])
         toggleBuffsFilter(false)
         toggleStatFilter(false)
         setStatFilters({ hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1 });
@@ -260,13 +271,16 @@ const App = () => {
         const nameMatch = miscrit.names.some(name => name.toLowerCase().includes(searchTermLower));
         let abilityMatch = true; let ultBuffMatch = true; let ultTypeMatch = true;
         if (abilityFilters.apply) {
-            const { name, text, ultBuff, ultType } = abilityFilters;
+            const { name, text, type, element, ultBuff, ultType, maxLevel } = abilityFilters;
             const searchString = text ? text.toLowerCase() : text;
             const textMatch = ability => text ? ability.desc.toLowerCase().includes(searchString) : true;
-            const nameMatch = abilityName => name ? abilityName === name : true;
-            abilityMatch = miscrit.abilities.some(a => nameMatch(a.name) && textMatch(a));
+            const nameMatch = ability => name ? ability.name === name : true;
+            const typeMatch = ability => type ? ability.type === type : true;
+            const elementMatch = ability => element ? ability.element === element : true;
+            const abilitiesToCheck = maxLevel ? miscrit.abilities.filter(a => a.unlockedAt <= maxLevel) : miscrit.abilities;
+            abilityMatch = abilitiesToCheck.some(a => nameMatch(a) && typeMatch(a) && elementMatch(a) && textMatch(a));
             ultBuffMatch = ultBuff ? miscrit.ultBuffs.some(ult => ult?.includes(ultBuff)) : true;
-            ultTypeMatch = ultType ? miscrit.ultimates.some(ult => ult.element === ultType) : true;
+            ultTypeMatch = ultType ? miscrit.ultimates.some(ult => ultType === 'Elemental' ? ult.element !== 'Physical' : ult.element === ultType) : true;
         }
         const elementMatch = currentElementFilter === 'All' || miscrit.element === currentElementFilter;
         const rarityMatch = currentRarityFilter === 'All' || miscrit.rarity === currentRarityFilter;
@@ -283,6 +297,7 @@ const App = () => {
 
 
     return (
+        <ToastProvider>
         <div className="bg-slate-900 p-3 min-h-screen">
 
             {isLoading && (
@@ -377,7 +392,7 @@ const App = () => {
                                 </div>
                                 <div className="relative flex flex-row items-center space-x-2 basis-1/4">
                                     <span className="text-gray-400 font-semibold text-sm">Buffs:</span>
-                                    <div className="relative">
+                                    <div className="relative flex space-x-4">
                                         <button
                                             type="button"
                                             onClick={() => toggleBuffsFilter(!showBuffsFilter)}
@@ -388,6 +403,14 @@ const App = () => {
                                             </span>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
                                                 <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedBuffs([])}
+                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
+                                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
                                             </svg>
                                         </button>
                                         {showBuffsFilter && (
@@ -416,9 +439,20 @@ const App = () => {
                                         <span className="text-gray-400 font-semibold text-sm">Filter Stats</span>
                                         <button
                                             onClick={() => toggleStatFilter(!showStatFilter)}
-                                            className="flex items-center space-x-2 bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="flex items-center text-white space-x-2 bg-gray-700 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         >
+                                            <span className="truncate">
+                                                {currentStatFilters}
+                                            </span>
                                             <svg className={`w-4 h-4 transition-transform duration-200 ${showStatFilter ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </button>
+                                        <button
+                                            onClick={() => resetStatFilters()}
+                                            className="flex items-center text-white space-x-2 bg-gray-700 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                                            </svg>
                                         </button>
                                     </div>
                                     {showStatFilter && (
@@ -457,7 +491,7 @@ const App = () => {
                                     </label>
                                 </div>
                             </div>
-                            {abilityFilters.apply && <div className='w-[99%] flex items-center justify-start gap-4'>
+                            {abilityFilters.apply && <div className='w-[90%] flex items-center justify-start gap-4 px-3'>
                                 <p className="text-gray-400 font-semibold text-sm">Ability filters</p>
                                 {abilityFilters.name && <div className='flex items-center justify-between gap-1'>
                                     <p className="text-gray-400 font-semibold text-sm">Name:</p>
@@ -466,6 +500,22 @@ const App = () => {
                                 {abilityFilters.text && <div className='flex items-center justify-between gap-1'>
                                     <p className="text-gray-400 font-semibold text-sm">Description:</p>
                                     <p className="text-gray-400 text-sm">{abilityFilters.text}</p>
+                                </div>}
+                                {abilityFilters.type && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Type:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.type}</p>
+                                </div>}
+                                {abilityFilters.element && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Element:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.element}</p>
+                                </div>}
+                                {abilityFilters.maxLevel && abilityFilters.maxLevel < 30 && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Max Level:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.maxLevel}</p>
+                                </div>}
+                                {abilityFilters.ultType && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Ultimate type:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.ultType}</p>
                                 </div>}
                                 {abilityFilters.ultBuff && <div className='flex items-center justify-between gap-1'>
                                     <p className="text-gray-400 font-semibold text-sm">Ultimate buff:</p>
@@ -501,6 +551,7 @@ const App = () => {
                             miscrit={miscrit}
                             showEvolved={showEvolved}
                             onClick={() => setExpandedMiscritId(miscrit.id)}
+                            onBuffClick={buff => setSelectedBuffs([buff])}
                         />
                     ))}
                 </div>
@@ -520,6 +571,7 @@ const App = () => {
                 />
             )}
         </div>
+        </ToastProvider>
     );
 };
 
