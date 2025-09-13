@@ -146,7 +146,7 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                                     >
                                         <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.434-.233 3.319.837.249.27.47.568.663.876.388.604.215 1.372-.36 1.837a1.442 1.442 0 00-2.104-.326c-.416.331-.76.73-.97 1.161-.06.12-.115.244-.168.37-.076.194-.252.333-.466.333h-.95a.75.75 0 01-.712-.513 11.237 11.237 0 01-1.76-6.522c0-.522.424-.945.945-.945h.946c.522 0 .945.423.945.945v.29c.477-.168.995-.293 1.54-.356.126-.015.25-.03.375-.045zM12 18.75a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
                                     </svg>
-                                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-48 p-2 bg-slate-900 border border-slate-700 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                                    <div className={`absolute top-full mt-2 ${index===0 ? 'left-0' : 'left-1/2 transform -translate-x-1/2'} w-48 p-2 bg-slate-900 border border-slate-700 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10`}>
                                         <p className="font-semibold mb-1">{loc.location}</p>
                                         {loc.areas.length > 0 && (
                                             <p className="text-gray-300">Areas: {loc.areas.join(', ')}</p>
@@ -154,7 +154,7 @@ const ExpandedMiscritCard = ({ miscrit, onClose }) => {
                                         {loc.days.length > 0 && (
                                             <p className="text-gray-300">Days: {loc.days.join(', ')}</p>
                                         )}
-                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-slate-900 rotate-45 border-l border-t border-slate-700"></div>
+                                        <div className={`absolute bottom-full ${index===0 ? 'left-0' : 'left-1/2 transform -translate-x-1/2'} w-3 h-3 bg-slate-900 rotate-45 border-l border-t border-slate-700`}></div>
                                     </div>
                                 </div>
                             </span>
