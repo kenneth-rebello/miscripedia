@@ -4,7 +4,7 @@ import {
     statValues, getGradientClass, rarityShinyBgColors, rarityTextColors, rarityBorderColors, statIcons, iconBgColors, getStatColor
 } from '../helpers/helpers.js';
 
-const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick, selectedBuffs }) => {
+const MiscritCard = ({ miscrit, onClick, showEvolution=1, onBuffClick, selectedBuffs }) => {
     const statLabels = {
         hp: 'HP', spd: 'SPD', ea: 'EA', pa: 'PA', ed: 'ED', pd: 'PD'
     };
@@ -39,21 +39,13 @@ const MiscritCard = ({ miscrit, onClick, showEvolved, onBuffClick, selectedBuffs
                     className="absolute top-2 right-2 w-8 h-8 rounded-full"
                 />
                 {
-                    showEvolved ? <div className="flex justify-between w-full h-full p-4 items-end">
-                        <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-[30%] object-contain drop-shadow-md`} />
-                        <img src={miscrit.images[3]} alt={miscrit.names[3]} className={`h-full object-contain drop-shadow-md`} />
-                    </div>
-                        :
-                        <img src={miscrit.images[0]} alt={miscrit.names[0]} className={`h-full object-contain drop-shadow-md`} />
+                    <img src={miscrit.images[showEvolution - 1]} alt={miscrit.names[showEvolution - 1]} className={`h-full object-contain drop-shadow-md`} />
                 }
             </div>
             <div className={`p-2 sm:p-3 text-center flex-1 flex-col justify-between ${rarityTextColors[miscrit.rarity]}`}>
                 <div>
-                    {showEvolved ? <div className="flex flex-col items-center w-full p-0">
-                        <h2 className={`text-xs sm:text-xs font-bold text-slate-400`}>{miscrit.name}</h2>
-                        <h2 className={`text-xl sm:text-3xl font-bold card-font`}>{miscrit.names[3]}</h2>
-                    </div> :
-                        <h2 className={`text-xl sm:text-3xl font-bold card-font`}>{miscrit.name}</h2>
+                    {
+                        <h2 className={`text-xl sm:text-3xl font-bold card-font`}>{miscrit.names[showEvolution - 1]}</h2>
                     }
 
                     {miscrit.buffs.length > 0 && (

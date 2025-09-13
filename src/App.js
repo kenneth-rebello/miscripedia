@@ -4,6 +4,7 @@ import './App.css';
 import MiscritCard from './components/MiscritCard';
 import ExpandedMiscritCard from './components/ExpandedMiscritCard';
 import AbilityFilterDialog from './components/AbilityFilter';
+import NumberSelector from './components/inputs/NumberSelector';
 import { ToastProvider } from './services/toast.service.js';
 
 import miscritsData from './data/miscrits.json';
@@ -17,6 +18,10 @@ const App = () => {
 
     // State variables
     const [allMiscrits, setAllMiscrits] = useState([]);
+    
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showFilters, setShowFilters] = useState(false); 
+    const [selectedEvo, setSelectedEvo] = useState(1);
 
     const [elements, setElements] = useState([]);
     const [selectedElements, setSelectedElements] = useState([]);
@@ -29,10 +34,6 @@ const App = () => {
     const [days, setDays] = useState(Object.values(dayMap));
     const [availableUltBuffs, setAvailableUltBuffs] = useState([]);
     const [availableAbilities, setAvailableAbilities] = useState([]);
-
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showEvolved, setShowEvolved] = useState(false);
-    const [showFilters, setShowFilters] = useState(false); 
 
     const [currentLocationFilter, setCurrentLocationFilter] = useState('All');
     const [currentDayFilter, setCurrentDayFilter] = useState('All');
@@ -48,6 +49,7 @@ const App = () => {
     const [statFilters, setStatFilters] = useState({
         hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
     });
+    const [exactStats, toggleExactStats] = useState(false);
     
     const [showAbilityFilter, toggleAbilityFilter] = useState(false);
     const [abilityFilters, setAbilityFilters] = useState({
@@ -93,10 +95,6 @@ const App = () => {
         // eslint-disable-next-line
     }, []);
 
-    
-    useEffect(() => {
-        setCurrentStatFilters(Object.entries(statFilters).filter(([k,v]) => v > 1).map(([k,v]) => `${k}: ${v}`).join(', '));
-    }, [statFilters])
 
     // Data fetching and transformation logic
     useEffect(() => {
@@ -226,19 +224,20 @@ const App = () => {
     }, []);
 
 
-    const handleToggle = (e) => {
-        setShowEvolved(e.target.checked);
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 2000);
-    };
+    useEffect(() => {
+        setCurrentStatFilters(Object.entries(statFilters).filter(([k,v]) => v > 1).map(([k,v]) => `${k}: ${v}`).join(', '));
+    }, [statFilters])
+
+    useEffect(() => {
+        resetStatFilters();
+        // eslint-disable-next-line
+    }, [exactStats])
 
     const resetStatFilters = () => {
+        const resetTo = exactStats ? 0 : 1;
         setStatFilters({
-            hp: 1, spd: 1, ea: 1, pa: 1, ed: 1, pd: 1,
+            hp: resetTo, spd: resetTo, ea: resetTo, pa: resetTo, ed: resetTo, pd: resetTo,
         })
-        toggleStatFilter(false);
     }
 
     const handleStatFilterChange = (stat, value) => {
@@ -253,6 +252,11 @@ const App = () => {
         toggleAbilityFilter(false);
         setShowFilters(false);
     }
+
+    const handleEvoChange = (evo) => {
+        console.log(evo);
+        setSelectedEvo(evo);
+    };
 
     const handleMultiSelect = (value, type) => {
         if (type === 'rarity')
@@ -334,7 +338,7 @@ const App = () => {
                             (currentDayFilter === 'Everyday' && miscrit.locations?.some(l => l.days?.length === 0)) ||
                             miscrit.locations?.some(l => l.days?.includes(currentDayFilter));
         const statMatch = Object.keys(statFilters).every(statKey => {
-            return statValues[miscrit[statKey]] >= statFilters[statKey];
+            return exactStats ? (statFilters[statKey] ? statValues[miscrit[statKey]] === statFilters[statKey] : true) : statValues[miscrit[statKey]] >= statFilters[statKey];
         });
         const buffsMatch = selectedBuffs.length === 0 || selectedBuffs.some(buff => miscrit.buffs.includes(buff));
 
@@ -590,7 +594,21 @@ const App = () => {
                                     </div>
                                     {showStatFilter && (
                                         <div className="absolute top-full mt-2 w-64 p-4 rounded-xl shadow-lg bg-gray-800 z-20 transition-opacity duration-300">
-                                            <h3 className="text-sm font-semibold text-gray-400 mb-2">Minimum Stat Value:</h3>
+                                            <div className="w-full flex justify-between items-center">
+                                                <h3 className="text-sm font-semibold text-gray-400 mb-2">{`${exactStats ? '' : 'Minimum '}Stat Values:`}</h3>
+                                                <div className="flex items-center space-x-2">
+                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            className="sr-only peer"
+                                                            checked={exactStats}
+                                                            onChange={e => toggleExactStats(e.target.checked)}
+                                                        />
+                                                        <div className="w-11 h-5 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                    </label>
+                                                </div>
+                                            </div>
                                             <div className="space-y-3">
                                                 {Object.keys(statFilters).map(stat => (
                                                     <div key={stat} className="flex items-center justify-start gap-2">
@@ -611,17 +629,8 @@ const App = () => {
                                     )}
                                 </div>
                                 <div className="flex items-center space-x-2 basis-1/4">
-                                    <span className="text-gray-400 font-semibold text-sm">Show Evolved:</span>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            value=""
-                                            className="sr-only peer"
-                                            checked={showEvolved}
-                                            onChange={handleToggle}
-                                        />
-                                        <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                    </label>
+                                    <span className="text-gray-400 font-semibold text-sm">Show Evolution:</span>
+                                    <NumberSelector onSelect={(evo) => handleEvoChange(evo)} initialValue={selectedEvo} />
                                 </div>
                             </div>
                             {abilityFilters.apply && <div className='w-[90%] flex items-center justify-start gap-4 px-3'>
@@ -682,9 +691,9 @@ const App = () => {
                         <MiscritCard
                             key={miscrit.id}
                             miscrit={miscrit}
-                            showEvolved={showEvolved}
+                            showEvolution={selectedEvo}
                             onClick={() => setExpandedMiscritId(miscrit.id)}
-                            onBuffClick={buff => setSelectedBuffs([buff])}
+                            onBuffClick={buff => handleMultiSelect(buff, 'buff')}
                             selectedBuffs={selectedBuffs}
                         />
                     ))}
