@@ -64,7 +64,7 @@ const Toast = ({ message, theme }) => {
 
     return (
         <div className={`w-full max-w-sm px-4 py-2 my-2 rounded-full shadow-lg pointer-events-auto transition-all duration-300 transform scale-100 opacity-100
-      ${themeClasses}`}
+            ${themeClasses}`}
         >
             <div className="flex items-center justify-center">
                 <span className="text-sm font-medium text-center">{message}</span>

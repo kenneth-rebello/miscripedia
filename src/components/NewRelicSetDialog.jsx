@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import findBestRelicSet from '../helpers/relic_selection';
 import { useToast } from '../services/toast.service';
 
@@ -16,6 +16,7 @@ const NewRelicSetDialog = ({ isOpen, onClose }) => {
     ];
 
     const [stats, setStats] = useState(initialStats);
+    const [arePrioritiesValid, setAreValidPriorities] = useState(true);
 
     const handleMove = (label, direction) => {
         const index = stats.findIndex(s => s.label === label);
@@ -34,15 +35,9 @@ const NewRelicSetDialog = ({ isOpen, onClose }) => {
     };
 
     const handleGenerateSuggestions = () => {
-        const selectedStats = stats.filter(stat => stat.value !== 0);
-        let valid = true;
-        selectedStats.forEach((stat, idx) => {
-            if(stat.priority !== (idx + 1)) {
-                valid = false;
-            }
-        })
-        if(!valid) {
-            showToast('Invalid priorities. Selected stats should be before unselected stats.');
+        const selectedStats = stats.filter(s => s.value !== 0);
+        if(!arePrioritiesValid) {
+            showToast('Invalid priorities, please reorder your selected buffs');
             return;
         }
         onClose({
@@ -50,6 +45,30 @@ const NewRelicSetDialog = ({ isOpen, onClose }) => {
             relics: findBestRelicSet(selectedStats)
         });
     }
+
+    const setPriorties = () => {
+        let newPriorityStats = [];
+        const selected = stats.filter(stat => stat.value !== 0);
+        const unselected = stats.filter(stat => stat.value === 0);
+        selected.forEach((stat, idx) => {
+            newPriorityStats.push({...stat,  priority: idx + 1});
+        })
+        unselected.forEach((stat, idx) => {
+            newPriorityStats.push({...stat,  priority: idx + 1});
+        })
+        setStats(newPriorityStats);
+    }
+
+    useEffect(() => {
+        const selectedStats = stats.filter(stat => stat.value !== 0);
+        let valid = true;
+        selectedStats.forEach((stat, idx) => {
+            if(stat.priority !== (idx + 1)) {
+                valid = false;
+            }
+        });
+        setAreValidPriorities(valid);
+    }, [stats])
 
     
     if (!isOpen) return null;
@@ -105,10 +124,15 @@ const NewRelicSetDialog = ({ isOpen, onClose }) => {
                             ))}
                         </ul>
                         <div className="flex justify-center mt-6">
-                            <button onClick={() => handleGenerateSuggestions()}
-                                className="px-6 py-3 bg-lime-500 text-teal-950 font-bold rounded-full shadow-lg hover:bg-lime-600 transition-colors duration-200">
+                            {arePrioritiesValid ? <button onClick={() => handleGenerateSuggestions()}
+                                className="px-6 py-3 bg-lime-500 text-teal-950 font-bold rounded-full shadow-lg hover:bg-lime-600 transition-colors duration-200"
+                            >
                                 Generate Suggestions
-                            </button>
+                            </button> : <button onClick={setPriorties}
+                                className="px-6 py-3 bg-slate-600 text-lime-500 font-bold rounded-full shadow-lg hover:bg-slate-400 hover:text-lime-900 transition-colors duration-200"
+                            >
+                                Fix Priority Order
+                            </button>}
                         </div>
                     </div>
                 </div>

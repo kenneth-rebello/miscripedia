@@ -115,8 +115,10 @@ const RelicsPage = ({ toggleSidebar }) => {
     }
 
     useEffect(() => {
-        if(expandCustomRelics && customRef.current)
-            customRef.current.scrollIntoView();
+        if(expandCustomRelics && customRef.current) {
+            customRef.current.scrollIntoView({block: 'center'});
+            toggleSuggestedRelics(false);
+        }
     }, [expandCustomRelics])
 
     const handleEditSet = (relicSet) => {
@@ -343,12 +345,11 @@ const RelicsPage = ({ toggleSidebar }) => {
                                                 </button>
                                             </div>
                                         </div>
-                                        <div ref={customRef} className="h-px w-full"></div>
                                         <div className="flex items-center gap-4 text-sm text-gray-300">
                                             {Object.keys(relic.stats).map(stat => (
                                                 <div key={stat} className="flex items-center gap-1">
                                                     <span className="uppercase">{stat}:{` `}</span>
-                                                    <span className="font-bold text-white">{relic.stats[stat]}</span>
+                                                    <span className="font-bold text-lime-500">{relic.stats[stat]}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -356,7 +357,10 @@ const RelicsPage = ({ toggleSidebar }) => {
                                 );
                             } else {
                                 return (
-                                    <div key={level} className="flex flex-col items-center justify-center bg-gray-800 rounded-md p-3 shadow-lg border-2 border-gray-700 text-gray-500">
+                                    <div key={level} 
+                                        className={`cursor-pointer flex flex-col items-center justify-center bg-gray-800 rounded-md p-3 shadow-lg border-2 border-gray-700 text-gray-500 ${selectedLevel === level && 'border-lime-500'}`}
+                                        onClick={() => setSelectedLevel(selectedLevel === level ? null : level)}
+                                    >
                                         <div className="text-center">
                                             <p>Empty Slot</p>
                                             <p className="text-sm">Level {level} Relic</p>
@@ -376,10 +380,10 @@ const RelicsPage = ({ toggleSidebar }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {filteredRelics.map(relic => (
                             <div key={relic.name} className="flex flex-col justify-between bg-gray-800 rounded-md p-3 shadow-lg border-2 border-gray-700 transition-transform transform hover:scale-105">
-                                <div className="flex justify-between items-center space-x-2 mb-4">
-                                    <h3 className="text-xl font-bold text-lime-500">{relic.name}</h3>
+                                <div className="flex justify-between items-start space-x-2 mb-4">
+                                    <h3 className="text-xl font-bold text-white">{relic.name}</h3>
                                     <div className="flex items-center space-x-2">
-                                        <span className="px-2 bg-lime-500 text-gray-900 text-sm font-bold rounded-full">{relic.level}</span>
+                                        <span className="px-2 bg-lime-500 text-black text-sm font-bold rounded-full">{relic.level}</span>
                                         <button onClick={() => addRelicToCustomSet(relic)} className="text-white hover:text-lime-500 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -391,7 +395,7 @@ const RelicsPage = ({ toggleSidebar }) => {
                                     {Object.keys(relic.stats).map(stat => (
                                         <div key={stat} className="flex items-center gap-1">
                                             <span className="uppercase">{stat}:{` `}</span>
-                                            <span className="font-bold text-white">{relic.stats[stat]}</span>
+                                            <span className="font-bold text-lime-500">{relic.stats[stat]}</span>
                                         </div>
                                     ))}
                                 </div>
