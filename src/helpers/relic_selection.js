@@ -31,7 +31,7 @@ const findBestRelicSet = (targetStats) => {
     const targetBuffs = {}
 
     targetStats.forEach(target => {
-        const targetStat = target.stat;
+        const targetStat = target.label;
         targetBuffs[targetStat] = target.value;
         let suggestions = {};
 
@@ -40,14 +40,16 @@ const findBestRelicSet = (targetStats) => {
             relicsByLevel[level].forEach(relic => {
                 const actualValue = relic.stats[targetStat] || 0;
                 if (actualValue) {
-                    levelSuggestions.push({ actualValue, name: relic.name, stats: relic.stats });
+                    levelSuggestions.push({ actualValue, level, name: relic.name, stats: relic.stats });
                 }
             })
             levelSuggestions.sort((a, b) => b.actualValue - a.actualValue);
-            suggestions[level] = levelSuggestions.slice(0, targetStats.length);
+            suggestions[level] = levelSuggestions.slice(0, Math.max(targetStats.length, 3));
             candidateRelics[level].push(...suggestions[level]);
         }
     });
+
+    const targetBuffKeys = Object.keys(targetBuffs)
 
     candidateRelics[10].forEach(relic_10 => {
         candidateRelics[20].forEach(relic_20 => {
@@ -55,12 +57,13 @@ const findBestRelicSet = (targetStats) => {
                 candidateRelics[35].forEach(relic_35 => {
                     const setBuffs = {}
                     let score = 0;
-                    Object.keys(targetBuffs).forEach(stat => {
+                    ['hp', 'spd', 'ea', 'ed', 'pa', 'pd'].forEach(stat => {
                         const statContribution = (relic_10.stats[stat] || 0) + (relic_20.stats[stat] || 0) + (relic_30.stats[stat] || 0) + (relic_35.stats[stat] || 0);
                         setBuffs[stat] = statContribution;
-                        const targetStat = targetStats.find(t => t.stat === stat);
+                        const targetStat = targetStats.find(t => t.label === stat);
                         const priority = [targetStat?.priority || 5];
-                        score += calculateWeightedScore(statContribution, targetBuffs[stat], priority);
+                        if(targetBuffKeys.includes(stat))
+                            score += calculateWeightedScore(statContribution, targetBuffs[stat], priority);
                     })
                     candidateSets.push({
                         relics: [relic_10, relic_20, relic_30, relic_35],

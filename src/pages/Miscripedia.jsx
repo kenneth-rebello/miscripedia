@@ -4,7 +4,6 @@ import MiscritCard from '../components/MiscritCard';
 import ExpandedMiscritCard from '../components/ExpandedMiscritCard';
 import AbilityFilterDialog from '../components/AbilityFilter';
 import NumberSelector from '../components/inputs/NumberSelector';
-import { ToastProvider } from '../services/toast.service.js';
 
 import miscritsData from '../data/miscrits.json';
 import MiscritLogo from '../data/MiscritsLogo.png';
@@ -347,377 +346,375 @@ const MiscripediaPage = ({ toggleSidebar }) => {
 
 
     return (
-        <ToastProvider>
-            <div className="bg-slate-900 p-3 min-h-screen">
+        <div className="bg-slate-900 p-3 min-h-screen">
 
-                {isLoading && (
-                    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
-                        <div className="relative w-16 h-16">
-                            <div className="absolute inset-0 border-4 border-gray-700 rounded-full animate-ping"></div>
-                            <div className="absolute inset-0 border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
-                        </div>
-                        <p className="mt-4 text-gray-200 font-semibold">Loading...</p>
+            {isLoading && (
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
+                    <div className="relative w-16 h-16">
+                        <div className="absolute inset-0 border-4 border-gray-700 rounded-full animate-ping"></div>
+                        <div className="absolute inset-0 border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
                     </div>
-                )}
+                    <p className="mt-4 text-gray-200 font-semibold">Loading...</p>
+                </div>
+            )}
 
-                <header className="sticky-header sticky top-2 z-10 p-4 mb-4">
-                    {showHeader || forceHeader ? (<div className={`flex flex-col justify-center items-center gap-2 space-y-4 sm:space-y-0 sm:space-x-8 max-w-8xl mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500`}>
-                        <div className="flex items-center justify-center sm:justify-start gap-4">
-                            <button className="absolute left-10 text-white" onClick={toggleSidebar}>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
-                            </button>
-                            <img src={MiscritLogo} alt="Miscrits" className="h-[4rem]" />
-                            <h1 className="hidden md:block text-3xl md:text-[2rem] font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-lime-200 to-lime-600 drop-shadow-md header-font">
-                                Critdex
-                            </h1>
-                        </div>
-                        <div className="flex flex-row items-center space-x-0 sm:space-x-4 w-[95%] justify-between gap-3">
-                            <input
-                                type="text"
-                                placeholder="Search by name..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <button
-                                onClick={() => setShowFilters(!showFilters)}
-                                className="mt-2 sm:mt-0 text-gray-200 text-sm px-4 py-2 rounded-full font-semibold border-2 border-gray-700 hover:bg-gray-700 transition-colors duration-200"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-funnel" viewBox="0 0 16 16">
-                                    <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z" />
-                                </svg>
-                            </button>
-                        </div>
+            <header className="sticky-header sticky top-2 z-10 p-4 mb-4">
+                {showHeader || forceHeader ? (<div className={`flex flex-col justify-center items-center gap-2 space-y-4 sm:space-y-0 sm:space-x-8 max-w-8xl mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500`}>
+                    <div className="flex items-center justify-center sm:justify-start gap-4">
+                        <button className="absolute left-10 text-white" onClick={toggleSidebar}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <img src={MiscritLogo} alt="Miscrits" className="h-[4rem]" />
+                        <h1 className="hidden md:block text-3xl md:text-[2rem] font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-lime-200 to-lime-600 drop-shadow-md header-font">
+                            Critdex
+                        </h1>
+                    </div>
+                    <div className="flex flex-row items-center space-x-0 sm:space-x-4 w-[95%] justify-between gap-3">
+                        <input
+                            type="text"
+                            placeholder="Search by name..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full px-4 py-2 rounded-full border border-gray-700 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="mt-2 sm:mt-0 text-gray-200 text-sm px-4 py-2 rounded-full font-semibold border-2 border-gray-700 hover:bg-gray-700 transition-colors duration-200"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-funnel" viewBox="0 0 16 16">
+                                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z" />
+                            </svg>
+                        </button>
+                    </div>
 
-                        {showFilters && (
-                            <>
-                                <div className="flex flex-col sm:flex-row justify-between items-start flex-wrap gap-y-4 m-0 w-full sm:max-w-7xl mx-auto rounded-xl p-2 transition-all duration-500 ease-in-out">
+                    {showFilters && (
+                        <>
+                            <div className="flex flex-col sm:flex-row justify-between items-start flex-wrap gap-y-4 m-0 w-full sm:max-w-7xl mx-auto rounded-xl p-2 transition-all duration-500 ease-in-out">
 
-                                    <div className="relative flex flex-row items-center space-x-2 basis-1/4">
-                                        <span className="text-gray-400 font-semibold text-sm">Element:</span>
-                                        <div className="relative flex space-x-4">
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleElementFilter(!showElementFilter)}
-                                                className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
-                                            >
-                                                <span className="truncate">
-                                                    {selectedElements.length > 0 ? selectedElements.join(', ') : ''}
-                                                </span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
-                                                    <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
-                                                </svg>
-                                            </button>
-                                            {selectedElements.length > 0 && <button
-                                                onClick={() => setSelectedElements([])}
-                                                className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
-                                                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-                                                </svg>
-                                            </button>}
-                                            {showElementFilter && (
-                                                <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                                    {elements.map(element => (
-                                                        <div
-                                                            key={element}
-                                                            onClick={() => handleMultiSelect(element, 'element')}
-                                                            className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                readOnly
-                                                                checked={selectedElements.includes(element)}
-                                                                className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
-                                                            />
-                                                            <img
-                                                                src={`https://worldofmiscrits.com/${(element === 'Dual' ? 'WaterEarth' : element).toLowerCase()}.png`}
-                                                                alt={`${element}`}
-                                                                className="w-5 h-5 rounded-full"
-                                                            />
-                                                            <span className="text-gray-200 text-sm">{element}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="relative flex flex-row items-center space-x-2 basis-1/4">
-                                        <span className="text-gray-400 font-semibold text-sm">Rarity:</span>
-                                        <div className="relative flex space-x-4">
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleRarityFilter(!showRarityFilter)}
-                                                className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
-                                            >
-                                                <span className="truncate">
-                                                    {selectedRarities.length > 0 ? selectedRarities.join(', ') : ''}
-                                                </span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
-                                                    <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
-                                                </svg>
-                                            </button>
-                                            {selectedRarities.length > 0 && <button
-                                                onClick={() => setSelectedRarities([])}
-                                                className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
-                                                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-                                                </svg>
-                                            </button>}
-                                            {showRarityFilter && (
-                                                <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                                    {rarities.map(rarity => (
-                                                        <div
-                                                            key={rarity}
-                                                            onClick={() => handleMultiSelect(rarity, 'rarity')}
-                                                            className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                readOnly
-                                                                checked={selectedRarities.includes(rarity)}
-                                                                className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
-                                                            />
-                                                            <span className="text-gray-200 text-sm">{rarity}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center space-x-4 basis-1/4">
-                                        <span className="text-gray-400 font-semibold text-sm">Locations:</span>
-                                        <select
-                                            id="location-select"
-                                            value={currentLocationFilter}
-                                            onChange={(e) => setCurrentLocationFilter(e.target.value)}
-                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                <div className="relative flex flex-row items-center space-x-2 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Element:</span>
+                                    <div className="relative flex space-x-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleElementFilter(!showElementFilter)}
+                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
                                         >
-                                            {locations.map(l => (
-                                                <option key={l} value={l}>{l}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="flex items-center space-x-4 basis-1/4">
-                                        <span className="text-gray-400 font-semibold text-sm">Days:</span>
-                                        <select
-                                            id="day-select"
-                                            value={currentDayFilter}
-                                            onChange={(e) => setCurrentDayFilter(e.target.value)}
-                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            <span className="truncate">
+                                                {selectedElements.length > 0 ? selectedElements.join(', ') : ''}
+                                            </span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
+                                                <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                            </svg>
+                                        </button>
+                                        {selectedElements.length > 0 && <button
+                                            onClick={() => setSelectedElements([])}
+                                            className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
                                         >
-                                            <option key={'All'} value={'All'}>All</option>
-                                            {days.map(d => (
-                                                <option key={d} value={d}>{d}</option>
-                                            ))}
-                                            <option key={'Everyday'} value={'Everyday'}>Everyday</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex items-center space-x-4 basis-1/4">
-                                        <span className="text-gray-400 font-semibold text-sm">Sort by:</span>
-                                        <select
-                                            id="sort-select"
-                                            value={currentSortOrder}
-                                            onChange={(e) => setCurrentSortOrder(e.target.value)}
-                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            <option value="id">ID</option>
-                                            <option value="power">Ultimate AP</option>
-                                        </select>
-                                    </div>
-                                    <div className="relative flex flex-row items-center space-x-2 basis-1/4">
-                                        <span className="text-gray-400 font-semibold text-sm">Buffs:</span>
-                                        <div className="relative flex space-x-4">
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleBuffsFilter(!showBuffsFilter)}
-                                                className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
-                                            >
-                                                <span className="truncate">
-                                                    {selectedBuffs.length > 0 ? selectedBuffs.join(', ') : ''}
-                                                </span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
-                                                    <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
-                                                </svg>
-                                            </button>
-                                            {selectedBuffs.length > 0 && <button
-                                                onClick={() => setSelectedBuffs([])}
-                                                className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
-                                                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-                                                </svg>
-                                            </button>}
-                                            {showBuffsFilter && (
-                                                <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                                    {availableBuffs.map(buff => (
-                                                        <div
-                                                            key={buff}
-                                                            onClick={() => handleMultiSelect(buff, 'buff')}
-                                                            className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                readOnly
-                                                                checked={selectedBuffs.includes(buff)}
-                                                                className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
-                                                            />
-                                                            <span className="text-gray-200 text-sm">{buff}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="relative basis-1/4">
-                                        <div className="flex items-center space-x-4">
-                                            <span className="text-gray-400 font-semibold text-sm">Filter Stats</span>
-                                            <button
-                                                onClick={() => toggleStatFilter(!showStatFilter)}
-                                                className="flex items-center text-white space-x-2 bg-gray-700 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            >
-                                                <span className="truncate">
-                                                    {currentStatFilters}
-                                                </span>
-                                                <svg className={`w-4 h-4 transition-transform duration-200 ${showStatFilter ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                            </button>
-                                            {currentStatFilters && <button
-                                                onClick={() => resetStatFilters()}
-                                                className="flex items-center text-white space-x-2 bg-red-500 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
-                                                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-                                                </svg>
-                                            </button>}
-                                        </div>
-                                        {showStatFilter && (
-                                            <div className="absolute top-full mt-2 w-64 p-4 rounded-xl shadow-lg bg-gray-800 z-20 transition-opacity duration-300">
-                                                <div className="w-full flex justify-between items-center">
-                                                    <h3 className="text-sm font-semibold text-gray-400 mb-2">{`${exactStats ? '' : 'Minimum '}Stat Values:`}</h3>
-                                                    <div className="flex items-center space-x-2">
-                                                        <label className="relative inline-flex items-center cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                value=""
-                                                                className="sr-only peer"
-                                                                checked={exactStats}
-                                                                onChange={e => toggleExactStats(e.target.checked)}
-                                                            />
-                                                            <div className="w-11 h-5 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                                        </label>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
+                                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                                            </svg>
+                                        </button>}
+                                        {showElementFilter && (
+                                            <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                {elements.map(element => (
+                                                    <div
+                                                        key={element}
+                                                        onClick={() => handleMultiSelect(element, 'element')}
+                                                        className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            readOnly
+                                                            checked={selectedElements.includes(element)}
+                                                            className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
+                                                        />
+                                                        <img
+                                                            src={`https://worldofmiscrits.com/${(element === 'Dual' ? 'WaterEarth' : element).toLowerCase()}.png`}
+                                                            alt={`${element}`}
+                                                            className="w-5 h-5 rounded-full"
+                                                        />
+                                                        <span className="text-gray-200 text-sm">{element}</span>
                                                     </div>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    {Object.keys(statFilters).map(stat => (
-                                                        <div key={stat} className="flex items-center justify-start gap-2">
-                                                            <p className="text-xs font-semibold uppercase text-slate-500">{stat.toUpperCase()}</p>
-                                                            <div className="flex flex-1 justify-end space-x-1">
-                                                                {[1, 2, 3, 4, 5].map(value => (
-                                                                    <div
-                                                                        key={value}
-                                                                        onClick={() => handleStatFilterChange(stat, value)}
-                                                                        className={`w-6 h-6 rounded-md cursor-pointer transition-colors duration-100 ease-in-out ${value <= statFilters[stat] ? getStatColor(value) : 'bg-gray-600'}`}
-                                                                    ></div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex items-center space-x-2 basis-1/4">
-                                        <span className="text-gray-400 font-semibold text-sm">Show Evolution:</span>
-                                        <NumberSelector onSelect={(evo) => handleEvoChange(evo)} initialValue={selectedEvo} />
+                                </div>
+
+                                <div className="relative flex flex-row items-center space-x-2 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Rarity:</span>
+                                    <div className="relative flex space-x-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleRarityFilter(!showRarityFilter)}
+                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <span className="truncate">
+                                                {selectedRarities.length > 0 ? selectedRarities.join(', ') : ''}
+                                            </span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
+                                                <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                            </svg>
+                                        </button>
+                                        {selectedRarities.length > 0 && <button
+                                            onClick={() => setSelectedRarities([])}
+                                            className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
+                                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                                            </svg>
+                                        </button>}
+                                        {showRarityFilter && (
+                                            <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                {rarities.map(rarity => (
+                                                    <div
+                                                        key={rarity}
+                                                        onClick={() => handleMultiSelect(rarity, 'rarity')}
+                                                        className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            readOnly
+                                                            checked={selectedRarities.includes(rarity)}
+                                                            className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
+                                                        />
+                                                        <span className="text-gray-200 text-sm">{rarity}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                {abilityFilters.apply && <div className='w-[90%] flex items-center justify-start gap-4 px-3'>
-                                    <p className="text-gray-400 font-semibold text-sm">Ability filters</p>
-                                    {abilityFilters.name && <div className='flex items-center justify-between gap-1'>
-                                        <p className="text-gray-400 font-semibold text-sm">Name:</p>
-                                        <p className="text-gray-400 text-sm">{abilityFilters.name}</p>
-                                    </div>}
-                                    {abilityFilters.text && <div className='flex items-center justify-between gap-1'>
-                                        <p className="text-gray-400 font-semibold text-sm">Description:</p>
-                                        <p className="text-gray-400 text-sm">{abilityFilters.text}</p>
-                                    </div>}
-                                    {abilityFilters.type && <div className='flex items-center justify-between gap-1'>
-                                        <p className="text-gray-400 font-semibold text-sm">Type:</p>
-                                        <p className="text-gray-400 text-sm">{abilityFilters.type}</p>
-                                    </div>}
-                                    {abilityFilters.element && <div className='flex items-center justify-between gap-1'>
-                                        <p className="text-gray-400 font-semibold text-sm">Element:</p>
-                                        <p className="text-gray-400 text-sm">{abilityFilters.element}</p>
-                                    </div>}
-                                    {abilityFilters.maxLevel && abilityFilters.maxLevel < 30 && <div className='flex items-center justify-between gap-1'>
-                                        <p className="text-gray-400 font-semibold text-sm">Max Level:</p>
-                                        <p className="text-gray-400 text-sm">{abilityFilters.maxLevel}</p>
-                                    </div>}
-                                    {abilityFilters.ultType && <div className='flex items-center justify-between gap-1'>
-                                        <p className="text-gray-400 font-semibold text-sm">Ultimate type:</p>
-                                        <p className="text-gray-400 text-sm">{abilityFilters.ultType}</p>
-                                    </div>}
-                                    {abilityFilters.ultBuff && <div className='flex items-center justify-between gap-1'>
-                                        <p className="text-gray-400 font-semibold text-sm">Ultimate buff:</p>
-                                        <p className="text-gray-400 text-sm">{abilityFilters.ultBuff.replace(/<|>/g, '')}</p>
-                                    </div>}
-                                </div>}
-                                <div className="flex flex-row items-center justify-end gap-2 m-0 space-x-0 sm:space-x-4 w-[95%]">
-                                    <button
-                                        onClick={() => toggleAbilityFilter(true)}
-                                        className="bg-slate-300 border-3 border-lime-800 px-1 py-1 text-lime-950 text-sm rounded-full font-semibold hover:bg-teal-600 transition-colors duration-200"
-                                    >
-                                        Filter by Abilities
-                                    </button>
-                                    <button
-                                        onClick={resetFilters}
-                                        className="bg-red-800 text-white text-sm px-3 py-1 rounded-full font-semibold hover:bg-red-700 transition-colors duration-200"
-                                    >
-                                        Reset Filters
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>) : (<div className={`flex justify-center items-center gap-2 space-y-4 sm:space-y-0  mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500 w-fit`} onClick={() => setForceHeader(true)}>
-                        <img src={MiscritLogo} alt="Miscrits" className="h-[2rem]" />
-                    </div>)}
-                </header>
-                <main className="max-w-8xl mx-auto p-7 pt-0">
-                    <div ref={sentinelRef} className="h-px w-full"></div>
-                    <div id="miscrit-container" className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`}>
-                        {filteredMiscrits.map(miscrit => (
-                            <MiscritCard
-                                key={miscrit.id}
-                                miscrit={miscrit}
-                                showEvolution={selectedEvo}
-                                onClick={() => setExpandedMiscritId(miscrit.id)}
-                                onBuffClick={buff => handleMultiSelect(buff, 'buff')}
-                                selectedBuffs={selectedBuffs}
-                            />
-                        ))}
-                    </div>
-                </main>
-                {expandedMiscritId && (
-                    <ExpandedMiscritCard
-                        miscrit={allMiscrits.find(m => m.id === expandedMiscritId)}
-                        onClose={() => setExpandedMiscritId(null)}
-                    />
-                )}
 
-                {showAbilityFilter && (
-                    <AbilityFilterDialog
-                        filters={abilityFilters}
-                        abilities={availableAbilities} onClose={handleAbilityFilterChange}
-                        ultBuffs={availableUltBuffs}
-                    />
-                )}
-            </div>
-        </ToastProvider>
+                                <div className="flex items-center space-x-4 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Locations:</span>
+                                    <select
+                                        id="location-select"
+                                        value={currentLocationFilter}
+                                        onChange={(e) => setCurrentLocationFilter(e.target.value)}
+                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        {locations.map(l => (
+                                            <option key={l} value={l}>{l}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex items-center space-x-4 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Days:</span>
+                                    <select
+                                        id="day-select"
+                                        value={currentDayFilter}
+                                        onChange={(e) => setCurrentDayFilter(e.target.value)}
+                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option key={'All'} value={'All'}>All</option>
+                                        {days.map(d => (
+                                            <option key={d} value={d}>{d}</option>
+                                        ))}
+                                        <option key={'Everyday'} value={'Everyday'}>Everyday</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center space-x-4 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Sort by:</span>
+                                    <select
+                                        id="sort-select"
+                                        value={currentSortOrder}
+                                        onChange={(e) => setCurrentSortOrder(e.target.value)}
+                                        className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="id">ID</option>
+                                        <option value="power">Ultimate AP</option>
+                                    </select>
+                                </div>
+                                <div className="relative flex flex-row items-center space-x-2 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Buffs:</span>
+                                    <div className="relative flex space-x-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleBuffsFilter(!showBuffsFilter)}
+                                            className="bg-gray-700 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <span className="truncate">
+                                                {selectedBuffs.length > 0 ? selectedBuffs.join(', ') : ''}
+                                            </span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`w-4 h-4 transition-transform duration-200 ${showBuffsFilter ? 'rotate-180' : ''} bi bi-chevron-down`} viewBox="0 0 16 16">
+                                                <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                            </svg>
+                                        </button>
+                                        {selectedBuffs.length > 0 && <button
+                                            onClick={() => setSelectedBuffs([])}
+                                            className="bg-red-500 text-gray-200 text-sm px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-1"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
+                                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                                            </svg>
+                                        </button>}
+                                        {showBuffsFilter && (
+                                            <div className="absolute z-20 top-5 w-48 mt-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                {availableBuffs.map(buff => (
+                                                    <div
+                                                        key={buff}
+                                                        onClick={() => handleMultiSelect(buff, 'buff')}
+                                                        className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-700 transition duration-150"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            readOnly
+                                                            checked={selectedBuffs.includes(buff)}
+                                                            className="form-checkbox text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring-blue-400"
+                                                        />
+                                                        <span className="text-gray-200 text-sm">{buff}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="relative basis-1/4">
+                                    <div className="flex items-center space-x-4">
+                                        <span className="text-gray-400 font-semibold text-sm">Filter Stats</span>
+                                        <button
+                                            onClick={() => toggleStatFilter(!showStatFilter)}
+                                            className="flex items-center text-white space-x-2 bg-gray-700 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <span className="truncate">
+                                                {currentStatFilters}
+                                            </span>
+                                            <svg className={`w-4 h-4 transition-transform duration-200 ${showStatFilter ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </button>
+                                        {currentStatFilters && <button
+                                            onClick={() => resetStatFilters()}
+                                            className="flex items-center text-white space-x-2 bg-red-500 px-3 py-1 rounded-full border border-gray-700 hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
+                                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                                            </svg>
+                                        </button>}
+                                    </div>
+                                    {showStatFilter && (
+                                        <div className="absolute top-full mt-2 w-64 p-4 rounded-xl shadow-lg bg-gray-800 z-20 transition-opacity duration-300">
+                                            <div className="w-full flex justify-between items-center">
+                                                <h3 className="text-sm font-semibold text-gray-400 mb-2">{`${exactStats ? '' : 'Minimum '}Stat Values:`}</h3>
+                                                <div className="flex items-center space-x-2">
+                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            className="sr-only peer"
+                                                            checked={exactStats}
+                                                            onChange={e => toggleExactStats(e.target.checked)}
+                                                        />
+                                                        <div className="w-11 h-5 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {Object.keys(statFilters).map(stat => (
+                                                    <div key={stat} className="flex items-center justify-start gap-2">
+                                                        <p className="text-xs font-semibold uppercase text-slate-500">{stat.toUpperCase()}</p>
+                                                        <div className="flex flex-1 justify-end space-x-1">
+                                                            {[1, 2, 3, 4, 5].map(value => (
+                                                                <div
+                                                                    key={value}
+                                                                    onClick={() => handleStatFilterChange(stat, value)}
+                                                                    className={`w-6 h-6 rounded-md cursor-pointer transition-colors duration-100 ease-in-out ${value <= statFilters[stat] ? getStatColor(value) : 'bg-gray-600'}`}
+                                                                ></div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center space-x-2 basis-1/4">
+                                    <span className="text-gray-400 font-semibold text-sm">Show Evolution:</span>
+                                    <NumberSelector onSelect={(evo) => handleEvoChange(evo)} initialValue={selectedEvo} />
+                                </div>
+                            </div>
+                            {abilityFilters.apply && <div className='w-[90%] flex items-center justify-start gap-4 px-3'>
+                                <p className="text-gray-400 font-semibold text-sm">Ability filters</p>
+                                {abilityFilters.name && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Name:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.name}</p>
+                                </div>}
+                                {abilityFilters.text && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Description:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.text}</p>
+                                </div>}
+                                {abilityFilters.type && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Type:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.type}</p>
+                                </div>}
+                                {abilityFilters.element && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Element:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.element}</p>
+                                </div>}
+                                {abilityFilters.maxLevel && abilityFilters.maxLevel < 30 && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Max Level:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.maxLevel}</p>
+                                </div>}
+                                {abilityFilters.ultType && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Ultimate type:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.ultType}</p>
+                                </div>}
+                                {abilityFilters.ultBuff && <div className='flex items-center justify-between gap-1'>
+                                    <p className="text-gray-400 font-semibold text-sm">Ultimate buff:</p>
+                                    <p className="text-gray-400 text-sm">{abilityFilters.ultBuff.replace(/<|>/g, '')}</p>
+                                </div>}
+                            </div>}
+                            <div className="flex flex-row items-center justify-end gap-2 m-0 space-x-0 sm:space-x-4 w-[95%]">
+                                <button
+                                    onClick={() => toggleAbilityFilter(true)}
+                                    className="bg-slate-300 border-3 border-lime-800 px-1 py-1 text-lime-950 text-sm rounded-full font-semibold hover:bg-teal-600 transition-colors duration-200"
+                                >
+                                    Filter by Abilities
+                                </button>
+                                <button
+                                    onClick={resetFilters}
+                                    className="bg-red-800 text-white text-sm px-3 py-1 rounded-full font-semibold hover:bg-red-700 transition-colors duration-200"
+                                >
+                                    Reset Filters
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>) : (<div className={`flex justify-center items-center gap-2 space-y-4 sm:space-y-0  mx-auto bg-gray-900/90 rounded-xl p-4 shadow-lg border-2 border-gray-500 w-fit`} onClick={() => setForceHeader(true)}>
+                    <img src={MiscritLogo} alt="Miscrits" className="h-[2rem]" />
+                </div>)}
+            </header>
+            <main className="max-w-8xl mx-auto p-7 pt-0">
+                <div ref={sentinelRef} className="h-px w-full"></div>
+                <div id="miscrit-container" className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`}>
+                    {filteredMiscrits.map(miscrit => (
+                        <MiscritCard
+                            key={miscrit.id}
+                            miscrit={miscrit}
+                            showEvolution={selectedEvo}
+                            onClick={() => setExpandedMiscritId(miscrit.id)}
+                            onBuffClick={buff => handleMultiSelect(buff, 'buff')}
+                            selectedBuffs={selectedBuffs}
+                        />
+                    ))}
+                </div>
+            </main>
+            {expandedMiscritId && (
+                <ExpandedMiscritCard
+                    miscrit={allMiscrits.find(m => m.id === expandedMiscritId)}
+                    onClose={() => setExpandedMiscritId(null)}
+                />
+            )}
+
+            {showAbilityFilter && (
+                <AbilityFilterDialog
+                    filters={abilityFilters}
+                    abilities={availableAbilities} onClose={handleAbilityFilterChange}
+                    ultBuffs={availableUltBuffs}
+                />
+            )}
+        </div>
     );
 };
 

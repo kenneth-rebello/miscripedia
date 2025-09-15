@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
+
+import { ToastProvider } from './services/toast.service.js';
 import Sidebar from './components/Sidebar';
 import MiscripediaPage from './pages/Miscripedia';
 import RelicsPage from './pages/Relics';
@@ -13,7 +15,7 @@ const App = () => {
     };
 
     return (
-        <BrowserRouter>
+        <ToastProvider>
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}>
                 <nav>
                     <ul className="space-y-4">
@@ -34,7 +36,7 @@ const App = () => {
                 <Route path="/" element={<MiscripediaPage toggleSidebar={handleToggleSidebar} />} />
                 <Route path="/relics" element={<RelicsPage toggleSidebar={handleToggleSidebar} />} />
             </Routes>
-        </BrowserRouter>
+        </ToastProvider>
     );
 };
 
