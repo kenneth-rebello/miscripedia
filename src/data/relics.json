@@ -1,0 +1,498 @@
+[
+    {
+        "name": "Cloud Cake",
+        "level": 10,
+        "stats": {
+            "ea": 3,
+            "spd": 1
+        }
+    },
+    {
+        "name": "Dark Owlie Feather",
+        "level": 10,
+        "stats": {
+            "pa": 1,
+            "spd": 3
+        }
+    },
+    {
+        "name": "Lake Azore Pearl",
+        "level": 10,
+        "stats": {
+            "ed": 1,
+            "pd": 1,
+            "hp": 2
+        }
+    },
+    {
+        "name": "Skelepup's Spark",
+        "level": 10,
+        "stats": {
+            "ea": 1,
+            "spd": 3
+        }
+    },
+    {
+        "name": "Eternal Falls Mushroom",
+        "level": 10,
+        "stats": {
+            "ed": 1,
+            "hp": 3
+        }
+    },
+    {
+        "name": "GK's Slippers",
+        "level": 10,
+        "stats": {
+            "spd": 4
+        }
+    },
+    {
+        "name": "Elefauna Flower",
+        "level": 10,
+        "stats": {
+            "ea": 3,
+            "hp": 1
+        }
+    },
+    {
+        "name": "Pamboo Cane",
+        "level": 10,
+        "stats": {
+            "hp": 4
+        }
+    },
+    {
+        "name": "Woodsman's Axe Head",
+        "level": 10,
+        "stats": {
+            "pa": 3,
+            "hp": 1
+        }
+    },
+    {
+        "name": "Blessed Pollen",
+        "level": 10,
+        "stats": {
+            "ed": 2,
+            "pd": 2
+        }
+    },
+    {
+        "name": "Boss Venom",
+        "level": 10,
+        "stats": {
+            "hp": 5,
+            "spd": -1
+        }
+    },
+    {
+        "name": "Bean Stalk",
+        "level": 20,
+        "stats": {
+            "ed": 10,
+            "hp": 2
+        }
+    },
+    {
+        "name": "Flower of Despair",
+        "level": 20,
+        "stats": {
+            "hp": 6,
+            "pa": 6
+        }
+    },
+    {
+        "name": "Emerlad Scales",
+        "level": 20,
+        "stats": {
+            "pa": 9,
+            "pd": 3
+        }
+    },
+    {
+        "name": "Ship Captain's Log",
+        "level": 20,
+        "stats": {
+            "ea": 2,
+            "hp": 4,
+            "spd": 6
+        }
+    },
+    {
+        "name": "Frozen Claws",
+        "level": 20,
+        "stats": {
+            "ed": 4,
+            "pd": 4,
+            "hp": 4
+        }
+    },
+    {
+        "name": "Skyline Peak Gem",
+        "level": 20,
+        "stats": {
+            "hp": 10,
+            "spd": 2
+        }
+    },
+    {
+        "name": "Stony Shield",
+        "level": 20,
+        "stats": {
+            "ea": 4,
+            "ed": 8
+        }
+    },
+    {
+        "name": "Forging Hammer",
+        "level": 20,
+        "stats": {
+            "ea": 5,
+            "pa": 5,
+            "ed": -1,
+            "pd": -1,
+            "hp": 8
+        }
+    },
+    {
+        "name": "Elemental Explosion",
+        "level": 20,
+        "stats": {
+            "ea": 6,
+            "hp": 6
+        }
+    },
+    {
+        "name": "Nero's Orb",
+        "level": 20,
+        "stats": {
+            "ea": 5,
+            "pd": 5,
+            "spd": 2
+        }
+    },
+    {
+        "name": "Monk's Robe",
+        "level": 20,
+        "stats": {
+            "hp": 2,
+            "pd": 10
+        }
+    },
+    {
+        "name": "Helzbelz Bells",
+        "level": 20,
+        "stats": {
+            "hp": 2,
+            "spd": 10
+        }
+    },
+    {
+        "name": "Boss Diamond",
+        "level": 20,
+        "stats": {
+            "ed": 7,
+            "pd": 7,
+            "spd": -2
+        }
+    },
+    {
+        "name": "Echino Shell",
+        "level": 30,
+        "stats": {
+            "hp": 18,
+            "pd": 18
+        }
+    },
+    {
+        "name": "Magicite Staff",
+        "level": 30,
+        "stats": {
+            "ea": 17,
+            "ed": 7,
+            "pd": 7,
+            "spd": 3
+        }
+    },
+    {
+        "name": "Vanquished Soul",
+        "level": 30,
+        "stats": {
+            "pa": 16,
+            "hp": 16
+        }
+    },
+    {
+        "name": "Temple Stone",
+        "level": 30,
+        "stats": {
+            "ea": 16,
+            "hp": 16
+        }
+    },
+    {
+        "name": "Cactolln's Thorn",
+        "level": 30,
+        "stats": {
+            "ea": 10,
+            "pa": 10,
+            "ed": -5,
+            "pd": -5,
+            "hp": 16
+        }
+    },
+    {
+        "name": "Arrow of Love",
+        "level": 30,
+        "stats": {
+            "ea": 20,
+            "spd": 12
+        }
+    },
+    {
+        "name": "Gravitron Pebble",
+        "level": 30,
+        "stats": {
+            "ed": 20,
+            "spd": 12
+        }
+    },
+    {
+        "name": "Lost Swords",
+        "level": 30,
+        "stats": {
+            "pa": 20,
+            "spd": 12
+        }
+    },
+    {
+        "name": "Fractured Shell",
+        "level": 30,
+        "stats": {
+            "ed": 18,
+            "hp": 18
+        }
+    },
+    {
+        "name": "Gold Piece Die",
+        "level": 30,
+        "stats": {
+            "ea": 12,
+            "pa": 12,
+            "ed": 5,
+            "pd": 5
+        }
+    },
+    {
+        "name": "Dark Warro Thorn",
+        "level": 30,
+        "stats": {
+            "pa": 17,
+            "ed": 7,
+            "pd": 7,
+            "spd": 3
+        }
+    },
+    {
+        "name": "Monastery Idol",
+        "level": 30,
+        "stats": {
+            "ed": 9,
+            "pd": 9,
+            "hp": 16
+        }
+    },
+    {
+        "name": "Shattered Gatestone",
+        "level": 30,
+        "stats": {
+            "ed": 14,
+            "hp": 10,
+            "spd": 10
+        }
+    },
+    {
+        "name": "Shard of Dawn's Landing",
+        "level": 30,
+        "stats": {
+            "ea": 12,
+            "pa": 12,
+            "spd": 6
+        }
+    },
+    {
+        "name": "Bauble of the Dawn",
+        "level": 30,
+        "stats": {
+            "ea": 7,
+            "pa": 7,
+            "hp": 20
+        }
+    },
+    {
+        "name": "White Gem",
+        "level": 30,
+        "stats": {
+            "ed": 12,
+            "pd": 12,
+            "hp": 6
+        }
+    },
+    {
+        "name": "Mushles",
+        "level": 30,
+        "stats": {
+            "hp": 10,
+            "pd": 14,
+            "spd": 10
+        }
+    },
+    {
+        "name": "Tiki Idol",
+        "level": 30,
+        "stats": {
+            "pd": 20,
+            "spd": 12
+        }
+    },
+    {
+        "name": "Boss Relic",
+        "level": 30,
+        "stats": {
+            "ed": 5,
+            "pd": 5,
+            "hp": 25,
+            "spd": -4
+        }
+    },
+    {
+        "name": "Petrified Dragon Egg   ",
+        "level": 35,
+        "stats": {
+            "hp": 15,
+            "pd": 20,
+            "spd": -10
+        }
+    },
+    {
+        "name": "Dark Wind's Venom",
+        "level": 35,
+        "stats": {
+            "ed": 25,
+            "hp": 20
+        }
+    },
+    {
+        "name": "Molten Coin",
+        "level": 35,
+        "stats": {
+            "ed": 14,
+            "pd": 14,
+            "ea": 7,
+            "pa": 7
+        }
+    },
+    {
+        "name": "Frozen Coin",
+        "level": 35,
+        "stats": {
+            "ea": 14,
+            "pa": 14,
+            "ed": 7,
+            "pd": 7
+        }
+    },
+    {
+        "name": "Cage of Despair",
+        "level": 35,
+        "stats": {
+            "ed": 12,
+            "pd": 12,
+            "hp": 16,
+            "spd": -10
+        }
+    },
+    {
+        "name": "Salyam's Trident",
+        "level": 35,
+        "stats": {
+            "hp": 10,
+            "pa": 20,
+            "spd": 10
+        }
+    },
+    {
+        "name": "Shard of Rudolfie",
+        "level": 35,
+        "stats": {
+            "ea": 20,
+            "spd": 10,
+            "hp": 10
+        }
+    },
+    {
+        "name": "Gog's Cog",
+        "level": 35,
+        "stats": {
+            "ea": -10,
+            "hp": 15,
+            "pa": 20,
+            "spd": -10
+        }
+    },
+    {
+        "name": "Flying Carpet Fragment",
+        "level": 35,
+        "stats": {
+            "ea": 20,
+            "pa": -10,
+            "hp": 15,
+            "spd": -10
+        }
+    },
+    {
+        "name": "Charcoal Idol",
+        "level": 35,
+        "stats": {
+            "hp": 16,
+            "spd": 26
+        }
+    },
+    {
+        "name": "Moon Rock",
+        "level": 35,
+        "stats": {
+            "ed": 17,
+            "pd": 17,
+            "hp": 10
+        }
+    },
+    {
+        "name": "Scent of Skustunk",
+        "level": 35,
+        "stats": {
+            "ea": 15,
+            "pa": 15,
+            "hp": 10,
+            "spd": -10
+        }
+    },
+    {
+        "name": "Leggy's Eggs",
+        "level": 35,
+        "stats": {
+            "hp": 20,
+            "pd": 25
+        }
+    },
+    {
+        "name": "Petrified Mama Baby",
+        "level": 35,
+        "stats": {
+            "ed": 20,
+            "hp": 15,
+            "spd": -10
+        }
+    }
+]
